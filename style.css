@@ -11,11 +11,11 @@ body {
   #paper {
     display: block;
     text-align: center;
-    width: 95vw;
+    width: 80vw;
     min-height: 95vh;
     background-color: #be9439;
     box-shadow: 0px 0px 25px black;
-    margin: 2.5vw 2.5vw 2.5vh 2.5vw;
+    margin:2.5vw auto;
     border-radius: 5px;
     
   }
@@ -30,7 +30,7 @@ body {
   .left {
     position: relative;
     display: inline-block;
-    width: 30vw;
+    width: 25vw;
     min-height: 95vh;
     background-color: #1a1f31;
     float: left;
@@ -40,7 +40,7 @@ body {
   .right {
     position: relative;
     display: inline-block;
-    width: 65vw;
+    width: 55vw;
     min-height: 95vh;
     background-color: white;
     float: right;
