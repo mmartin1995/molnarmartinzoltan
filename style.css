@@ -31,7 +31,7 @@ body {
     position: relative;
     display: inline-block;
     width: 30vw;
-    min-height: calc(95vh - 35px);
+    min-height: 95vh;
     background-color: #1a1f31;
     float: left;
     color:white;
@@ -41,7 +41,7 @@ body {
     position: relative;
     display: inline-block;
     width: 65vw;
-    min-height: calc(95vh - 35px);
+    min-height: 95vh;
     background-color: white;
     float: right;
 
@@ -63,37 +63,34 @@ body {
 
 
 footer {
-  max-width: 95vw;
+  height: 15px;
+  width: 100vw;
+  background-color:#0d154700;
+  position: absolute;
+  bottom: 0;
+
   }
   
-  .wrapper {
-    display: table;
-    height: 35px;
-    display: inline-block;
-    vertical-align: middle;
-    background-color:#be3939;
-    width: 95vw;
+  footer div {
+    height: 100%;
+    width: 100%;
     text-align: center;
-    padding: 5px auto 5px auto;
     font-size: 10px;
-    left: 0;
+    margin: auto;
   }
   
   footer a {
     color:black;
     text-decoration: none;
-    display: inline-block;
+    vertical-align: bottom;
+    margin: auto;
   }
   
   footer a:hover {
-    color:rgba(68, 61, 61, 0.767);
+    color:rgb(255, 255, 255);
     transition: .2s ease-in-out;
   }
   
   strong {
-    font-weight: 700;
-  }
-
-  .footer-nav {
-    display: none;
+    font-weight: 500;
   }
