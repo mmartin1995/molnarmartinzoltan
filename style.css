@@ -3,8 +3,35 @@ body {
   font-family: 'Rubik', sans-serif;
 }
 
+#paper {
+  margin: auto;
+  max-width: 100%;
+  min-height: 100vh;
+  text-align: center;
+  background-color: #1a1f31;
+  color: whitesmoke;
+  padding: 5vw;
+}
+
+#portrait {
+  max-width: 45vw;
+  margin: 3vh auto;
+  
+}
 
 
+.leftinfo {
+  margin: 3vh auto;
+}
+
+h1 {
+  font-size: 5vw;
+  margin: 2vh auto;
+}
+
+h2 {
+  font-size: 4.5vw;
+}
 
 
 @media (min-width: 700px) {
@@ -14,7 +41,6 @@ body {
     width: 80vw;
     min-height: 95vh;
     background-color: #be9439;
-    box-shadow: 0px 0px 25px black;
     margin:2.5vw auto;
     border-radius: 5px;
     
@@ -35,6 +61,7 @@ body {
     background-color: #1a1f31;
     float: left;
     color:white;
+    padding: 10px;
   }
 
   .right {
@@ -44,7 +71,7 @@ body {
     min-height: 95vh;
     background-color: white;
     float: right;
-
+    padding: 10px;
   }
 
   #portrait {
@@ -68,6 +95,7 @@ footer {
   background-color:#0d154700;
   position: absolute;
   bottom: 0;
+  color: whitesmoke;
 
   }
   
@@ -80,7 +108,7 @@ footer {
   }
   
   footer a {
-    color:black;
+    color:rgb(163, 163, 163);
     text-decoration: none;
     vertical-align: bottom;
     margin: auto;
@@ -92,5 +120,5 @@ footer {
   }
   
   strong {
-    font-weight: 500;
+    font-weight: 600;
   }
