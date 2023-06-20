@@ -6,13 +6,12 @@ body {
 }
 
 #paper {
-  margin: 5vw auto auto auto;
-  max-width: 90%;
+  margin: auto auto;
+  max-width: 100%;
   min-height: 100vh;
   text-align: center;
   color: whitesmoke;
   padding: 10vw 10vw auto 10vw;
-  box-shadow: 0 0 10px ;
 }
 
 #portrait {
@@ -32,7 +31,12 @@ body {
 }
 
 .lightsection {
-  background-color: rgba(255, 255, 255, 0.329);
+  background-color: rgba(255, 255, 255, 0.144);
+}
+
+.section {
+  max-width: 90%;
+  margin: 25px auto;
 }
 
 .info {
@@ -59,7 +63,7 @@ body {
   padding: auto;
 }
 
-.info table {
+.section table {
   margin: auto;
   width: 65%;
 }
@@ -78,6 +82,33 @@ h2 {
 
 h3 {
   font-size: 4vw;
+}
+
+.workexperience {
+  margin: auto;
+  max-width: 80%;
+  text-align: left;
+
+}
+
+.workexperience h2 {
+  text-align: center;
+}
+
+.workexperience h4 {
+  margin: auto auto auto 5vw;
+}
+
+.workexperience h5 {
+  margin-left: 10vw;
+}
+
+.workingtime {
+  margin-left: ;
+}
+
+.work div, .work h4{
+  display: inline-block;
 }
 
 @media (min-width: 700px) {
