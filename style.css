@@ -1,17 +1,16 @@
 
 body {
   font-family: 'Rubik', sans-serif;
-  font-size: 3vw;
+  font-size: 3.5vw;
   background-color: #090b11;
+  text-align: center;
 }
 
 #paper {
   margin: auto auto;
   max-width: 100%;
   min-height: 100vh;
-  text-align: center;
   color: whitesmoke;
-  padding: 10vw 10vw auto 10vw;
 }
 
 #portrait {
@@ -30,13 +29,16 @@ body {
   transition: .2s ease-in-out;
 }
 
+section {
+  padding: 2.5vw 5vw;
+}
+
 .lightsection {
   background-color: rgba(255, 255, 255, 0.144);
 }
 
-.section {
-  max-width: 90%;
-  margin: 25px auto;
+.lightsection h2 {
+  padding: 25px auto;
 }
 
 .info {
@@ -46,16 +48,26 @@ body {
 }
 
 .icon {
-  width: 4.5vw;
+  width: 7vw;
   filter: invert(100%) grayscale(100%);
   text-align: left;
   vertical-align: middle;
   padding-top: .5vw;
   padding-bottom: .5vw;
+  padding-right: 10px;
+}
+
+.eduicon {
+  width: 12vw;
+  filter: invert(100%) grayscale(100%) brightness(100);
+  padding-top: .5vw;
+  padding-bottom: .5vw;
+  padding-right: 10px;
 }
 
 .icon:hover {
   filter: invert(100%) grayscale(100%) opacity(50%);
+  transition: .2s ease-in-out;
 }
 
 .right {
@@ -63,31 +75,39 @@ body {
   padding: auto;
 }
 
-.section table {
+section table {
   margin: auto;
-  width: 65%;
+  width: 90%;
 }
 
 h1 {
-  font-size: 5vw;
-  font-weight: 400;
-  margin: auto;
-  padding: 10px;
+  font-size: 6vw;
+  padding-top: 3.5vw;
+  padding-bottom: 1vw;
 }
 
 h2 {
-  font-size: 4.5vw;
+  font-size: 5vw;
   margin: 1vh auto;
 }
 
 h3 {
   font-size: 4vw;
+  margin: 20px auto;
+}
+
+h4 {
+  font-size: 3vw;
+  margin: 10px auto;
+}
+
+section div {
+  margin: 1vw auto;
 }
 
 .workexperience {
   margin: auto;
   max-width: 80%;
-  text-align: left;
 
 }
 
@@ -111,6 +131,8 @@ h3 {
   display: inline-block;
 }
 
+/*desktop*/
+
 @media (min-width: 700px) {
   #paper {
     display: block;
@@ -118,46 +140,34 @@ h3 {
     width: 80vw;
     min-height: 95vh;
     background-color: #be9439;
-    margin:2.5vw auto;
+    margin: 2.5vw auto;
     border-radius: 5px;
     
   }
 
+  section {
+    width: 30vw;
+  }
+
   body {
+    font-size: 2.5vw
   }
 
   h1 {
-    font-size: 30px;
+    font-size: 2vw;
   }
 
-  .left {
-    position: relative;
-    display: inline-block;
-    width: 25vw;
-    min-height: 95vh;
-    background-color: #0d154700;
-    float: left;
-    color:white;
-    padding: 10px;
-  }
-
-  .right {
-    position: relative;
-    display: inline-block;
-    width: 55vw;
-    min-height: 95vh;
-    background-color: white;
-    float: right;
-    padding: 10px;
+  .blur {
+    display: inline-block
   }
 
   #portrait {
-    max-width: 20vw;
+    max-width: 35vw;
     border: 1px solid black;
     margin: 3vw auto auto auto;
   }
 }
-
+*/
 
 /*footer*/
 
@@ -197,3 +207,5 @@ footer {
   strong {
     font-weight: 600;
   }
+
+  
