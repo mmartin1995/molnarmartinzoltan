@@ -30,7 +30,7 @@ body {
 }
 
 section {
-  padding: 2.5vw 5vw;
+  padding: 2.5vh 5vw;
 }
 
 .lightsection {
@@ -39,12 +39,6 @@ section {
 
 .lightsection h2 {
   padding: 25px auto;
-}
-
-.info {
-}
-
-.info tr {
 }
 
 .icon {
@@ -70,6 +64,10 @@ section {
   transition: .2s ease-in-out;
 }
 
+.school {
+  margin: 5vw auto;
+}
+
 .right {
   text-align: right;
   padding: auto;
@@ -78,26 +76,30 @@ section {
 section table {
   margin: auto;
   width: 90%;
+  font-size: 4vw;
 }
 
 h1 {
-  font-size: 6vw;
+  font-size: 7vw;
   padding-top: 3.5vw;
   padding-bottom: 1vw;
+  font-weight: 400;
 }
 
 h2 {
-  font-size: 5vw;
+  font-size: 6vw;
   margin: 1vh auto;
+  font-weight: 600;
+
 }
 
 h3 {
-  font-size: 4vw;
+  font-size: 6vw;
   margin: 20px auto;
 }
 
 h4 {
-  font-size: 3vw;
+  font-size: 4vw;
   margin: 10px auto;
 }
 
@@ -107,28 +109,11 @@ section div {
 
 .workexperience {
   margin: auto;
-  max-width: 80%;
 
 }
 
-.workexperience h2 {
-  text-align: center;
-}
-
-.workexperience h4 {
-  margin: auto auto auto 5vw;
-}
-
-.workexperience h5 {
-  margin-left: 10vw;
-}
-
-.workingtime {
-  margin-left: ;
-}
-
-.work div, .work h4{
-  display: inline-block;
+.work {
+  margin: 5vw auto auto auto;
 }
 
 /*desktop*/
@@ -139,8 +124,8 @@ section div {
     text-align: center;
     width: 80vw;
     min-height: 95vh;
-    background-color: #be9439;
-    margin: 2.5vw auto;
+    background-color: ;
+    margin: 2vw auto;
     border-radius: 5px;
     
   }
@@ -173,23 +158,19 @@ section div {
 
 
 footer {
-  height: 20px;
   width: 100vw;
   background-color:#0d154700;
-  position: ;
   bottom: 0;
   color: whitesmoke;
-  display: table;
   }
   
   footer div {
-    height: 100%;
+    color:whitesmoke;
     width: 100%;
-    text-align: center;
-    font-size: 10px;
+    font-size: 1.5vh;
     margin: auto;
-    display: table-cell;
-    vertical-align: bottom;
+    vertical-align: middle;
+    padding: 1.3vh;
   }
   
   footer a {
@@ -208,4 +189,8 @@ footer {
     font-weight: 600;
   }
 
-  
+  em {
+    font-weight: 300;
+    font-style: ;
+    font-size: 3vw;
+  }
