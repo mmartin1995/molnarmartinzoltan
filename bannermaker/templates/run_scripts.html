@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+<head>
+    <title>Szkriptek Futtatása</title>
+</head>
+<body>
+
+<h1>Szkriptek futtatásra készen állnak</h1>
+<h3>Fájlnév: {{ filename }}</h3>
+<form action="/run-scripts" method="post">
+    <input type="hidden" name="filename" value="{{ filename }}">
+    <input type="submit" value="Futtatás">
+</form>
+
+<!-- Új gomb hozzáadása itt -->
+<a href="/"><button type="button">Vissza a Főoldalra</button></a>
+
+</body>
+</html>
