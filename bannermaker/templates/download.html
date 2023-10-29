@@ -2,10 +2,10 @@
 <html lang="hu">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Szkriptek Futtatása</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Letöltés</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -102,25 +102,19 @@
     </style>
 </head>
 
-<body class="card" style="width: 65vw;">
-
-    <a href="/"><button type="button">Vissza a Főoldalra</button></a>
-
-    <h1>Szkriptek futtatásra készen állnak</h1>
-    <h3>Fájlnév: {{ filename }}</h3>
-    <form action="/run-scripts" method="post">
-        <input type="hidden" name="filename" value="{{ filename }}">
-
-        <!-- Rejtett mezők hozzáadása a szerző nevének, könyv címének és alcímének továbbításához -->
-        <input type="hidden" name="author_name" value="{{ author_name }}">
-        <input type="hidden" name="book_title" value="{{ book_title }}">
-        <input type="hidden" name="subtitle" value="{{ subtitle }}">
-
-        <input type="submit" value="Futtatás">
-    </form>
-
-
-
+<body class="card">
+  <a href="/"><button type="button">Vissza a Főoldalra</button></a>
+  <div>
+    <div>
+      <div>
+        <h1>Fájl sikeresen feldolgozva</h1>
+        <p>A fájlok tömörítve lettek. Kattintson az alábbi gombra a ZIP fájl letöltéséhez.</p>
+        <a href="{{ url_for('download', zip_name=zip_name) }}"><button type="button">
+            Letöltés</button>
+        </a>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

@@ -11,6 +11,7 @@ PRESET_COVER_WIDTH = 400  # cover.jpg szélessége
 PRESET_SHADOW_COLOR = "#000000"  # Az árnyék színe hexadecimális formátumban
 PRESET_SHADOW_BLUR = 10 # Árnyék elmosásának mértéke
 PRESET_SHADOW_OFFSET = (5, 5)  # Árnyék eltolása
+OUTPUT_DIRECTORY = "output_directory"
 
 # Szöveg beállítások
 PRESET_TEXTS = [
@@ -203,10 +204,12 @@ def replace_book_cover(background_path, cover_path, output_path):
     # Itt adjuk hozzá a szövegeket
     final_image = add_texts(final_image, PRESET_TEXTS)
 
-    final_image.save(output_path, "PNG")
+    final_image.save(os.path.join(OUTPUT_DIRECTORY, output_path), "PNG")
 
 # Fő program indítása
 def main(input_file_path):  # Módosítja a main függvényt, hogy fogadja az input_file_path paramétert
+    if not os.path.exists(OUTPUT_DIRECTORY):
+        os.makedirs(OUTPUT_DIRECTORY)
     configurations = [
         {
             "background": input_file_path,  # Használja az input_file_path-t

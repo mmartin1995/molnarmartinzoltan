@@ -1,10 +1,8 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="hu">
-
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Szkriptek Futtatása</title>
+    <meta charset="UTF-8">
+    <title>Fájl Feltöltése és Szkriptek Futtatása</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,15 +38,11 @@
             margin: 5px;
         }
 
-        input[type="text"],
-        button
+        input[type="text"]
         {
-            width: 20vw;
-            /* Szélesség beállítása */
+            width: 30vw;
             height: 2vw;
-            /* Magasság beállítása */
             padding: 5px 10px;
-            /* Belső térköz (padding) beállítása */
             border: .2px solid rgb(85, 85, 85);
             box-shadow: 1px 1px 5px black;
             border-radius: 5px;
@@ -57,6 +51,11 @@
         button {
             cursor: pointer;
             font-family: 'Montserrat', sans-serif;
+            width: 30vw;
+            height: 2.5vw;
+            box-shadow: 1px 1px 5px black;
+            border-radius: 5px;
+            font-size: 1.5vw;
         }
 
         input[type="file"] {
@@ -98,29 +97,33 @@
             display: flex;
             max-width: 60vw;
             justify-content: space-between;
+            align-items: center;
+            text-align: left;
         }
     </style>
 </head>
-
-<body class="card" style="width: 65vw;">
+<body>
+    <h1>Fájl Feltöltése és Szkriptek Futtatása</h1>
 
     <a href="/"><button type="button">Vissza a Főoldalra</button></a>
-
-    <h1>Szkriptek futtatásra készen állnak</h1>
-    <h3>Fájlnév: {{ filename }}</h3>
-    <form action="/run-scripts" method="post">
-        <input type="hidden" name="filename" value="{{ filename }}">
-
-        <!-- Rejtett mezők hozzáadása a szerző nevének, könyv címének és alcímének továbbításához -->
-        <input type="hidden" name="author_name" value="{{ author_name }}">
-        <input type="hidden" name="book_title" value="{{ book_title }}">
-        <input type="hidden" name="subtitle" value="{{ subtitle }}">
-
-        <input type="submit" value="Futtatás">
+    <form action="/" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <div class="textcontainer">
+            <h2>Szövegek megadása:</h2>
+            <div class="textflex">
+                <div><label>Szerző Neve:</label></div>
+                <div><input type="text" name="author_name" placeholder="Szerző Neve"></div>
+            </div>
+            <div class="textflex">
+                <div><label>Könyv hosszú címe:</label></div>
+                <div><input type="text" name="book_title" placeholder="Könyv hosszú címe"></div>
+            </div>
+            <div class="textflex">
+                <div><label>Alcím:</label></div>
+                <div><input type="text" name="subtitle" placeholder="Rövid leírás"></div>
+            </div>
+        </div>
+        <input type="submit" value="Feltöltés és Futtatás">
     </form>
-
-
-
 </body>
-
 </html>
