@@ -1,9 +1,7 @@
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 import os
-from werkzeug.utils import secure_filename
 import sys
 import argparse
-from pathlib import Path
 
 # Előre beállított értékek
 PRESET_BLUR_RADIUS = 0  # background blur mértéke
@@ -16,25 +14,25 @@ PRESET_SHADOW_OFFSET = (5, 5)  # Árnyék eltolása
 OUTPUT_DIRECTORY = "output_directory"
 
 # Szöveg beállítások
-def get_preset_texts(author_name, book_title, subtitle):
+def get_preset_texts(author_name, book_title, subtitle, font_path):
     return [
         {
             "text": author_name,
-            "font": "Poppins-Regular.ttf",
+            "font": font_path,
             "size": 50,
             "color": "#FFFFFF",
             "position": (540, 370)
         },
         {
             "text": book_title,
-            "font": "Poppins-Regular.ttf",
+            "font": font_path,
             "size": 80,
             "color": "#FFFFFF",
             "position": (540, 450)
         },
         {
             "text": subtitle,
-            "font": "Poppins-Regular.ttf",
+            "font": font_path,
             "size": 35,
             "color": "#FFFFFF",
             "position": (540, 600)
@@ -182,7 +180,7 @@ def wrap_text(text, font, max_width):
             lines.append(current_line.strip())
     return lines
 
-def replace_book_cover(background_path, cover_path, output_path, texts):
+def replace_book_cover(background_path, cover_path, output_path, texts, output_directory):
     background = Image.open(background_path).convert('RGBA')
     background = resize_and_center_image(background, 1080)
     background = blur_background(background, PRESET_BLUR_RADIUS)
@@ -204,14 +202,11 @@ def replace_book_cover(background_path, cover_path, output_path, texts):
     # Itt adjuk hozzá a szövegeket
     final_image = add_texts(final_image, texts)
 
-    final_image.save(os.path.join(OUTPUT_DIRECTORY, output_path), "PNG")
+    final_image.save(os.path.join(output_directory, output_path), "PNG")
 
 # Fő program indítása
-def main(input_file_path, output_directory, author_name, book_title, subtitle):
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
-
-    preset_texts = get_preset_texts(author_name, book_title, subtitle)
+def main(input_file_path, output_directory, author_name, book_title, subtitle, font_path):
+    preset_texts = get_preset_texts(author_name, book_title, subtitle, font_path)
 
     configurations = [
         {
@@ -222,7 +217,7 @@ def main(input_file_path, output_directory, author_name, book_title, subtitle):
     ]
 
     for config in configurations:
-        replace_book_cover(config["background"], config["cover"], config["output"], preset_texts)
+        replace_book_cover(config["background"], config["cover"], config["output"], preset_texts, output_directory)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Könyvborító kép generálása.')
@@ -231,6 +226,7 @@ if __name__ == '__main__':
     parser.add_argument('author_name', help='A szerző neve')
     parser.add_argument('book_title', help='A könyv címe')
     parser.add_argument('subtitle', help='A könyv alcíme')
+    parser.add_argument('font_path', help='A betűtípus elérési útja')
 
     args = parser.parse_args()
 
@@ -239,4 +235,4 @@ if __name__ == '__main__':
         os.makedirs(args.output_directory)
 
     # A fő program elindítása az új argumentumokkal
-    main(args.input_file_path, args.output_directory, args.author_name, args.book_title, args.subtitle)
+    main(args.input_file_path, args.output_directory, args.author_name, args.book_title, args.subtitle, args.font_path)

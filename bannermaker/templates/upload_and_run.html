@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="hu">
+
 <head>
     <meta charset="UTF-8">
     <title>Fájl Feltöltése és Szkriptek Futtatása</title>
@@ -38,37 +39,28 @@
             margin: 5px;
         }
 
-        input[type="text"]
-        {
-            width: 30vw;
-            height: 2vw;
-            padding: 5px 10px;
-            border: .2px solid rgb(85, 85, 85);
-            box-shadow: 1px 1px 5px black;
+        input,
+        select {
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1vw;
             border-radius: 5px;
+            box-shadow: 1px 1px 5px black;
+            border: .2px solid rgb(85, 85, 85);
+            margin: auto;
+            cursor: pointer;
+            padding: 10px 20px;
+            display: inline-block;
         }
 
-        button {
-            cursor: pointer;
-            font-family: 'Montserrat', sans-serif;
+        input[type="text"] {
             width: 30vw;
-            height: 2.5vw;
-            box-shadow: 1px 1px 5px black;
-            border-radius: 5px;
-            font-size: 1.5vw;
+            cursor: auto;
         }
 
         input[type="file"] {
-            border: .2px solid rgb(85, 85, 85);
-            box-shadow: 1px 1px 5px black;
-            border-radius: 5px;
-            padding: 10px 20px;
-            margin: auto;
-            display: inline-block;
             text-align: center;
-            font-size: 1vw;
-            cursor: pointer;
-            font-family: 'Montserrat', sans-serif;
         }
 
         input[type="submit"] {
@@ -77,11 +69,27 @@
             background-color: black;
             width: 25vw;
             padding: 10px 1vw;
-            margin: auto;
-            box-shadow: 1px 1px 15px black;
-            border-radius: 5px;
             text-align: center;
+            border: none;
+        }
+
+        .button {
+            position: fixed;
             cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            width: 25vw;
+            box-shadow: 1px 1px 5px black;
+            border-radius: 5px;
+            font-size: 1vw;
+            padding: 10px 20px;
+            display: flex;
+        }
+
+        .button a {
+            text-decoration: none;
+            color: black;
+            display: block;
+            margin: auto;
         }
 
         form {
@@ -93,19 +101,29 @@
         }
 
         .textflex {
-            margin: auto;
             display: flex;
             max-width: 60vw;
             justify-content: space-between;
             align-items: center;
             text-align: left;
         }
+
+        select {
+            width: 30vw;
+            height: 2vw;
+            padding: 5px 10px;
+            box-shadow: 1px 1px 5px black;
+            border-radius: 5px;
+            box-sizing: border-box;
+            border: .2px solid rgb(85, 85, 85);
+        }
     </style>
 </head>
+
 <body>
     <h1>Fájl Feltöltése és Szkriptek Futtatása</h1>
 
-    <a href="/"><button type="button">Vissza a Főoldalra</button></a>
+    <div class="button"><a href="/">Vissza a Főoldalra</a></div>
     <form action="/" method="POST" enctype="multipart/form-data">
         <input type="file" name="file">
         <div class="textcontainer">
@@ -122,8 +140,19 @@
                 <div><label>Alcím:</label></div>
                 <div><input type="text" name="subtitle" placeholder="Rövid leírás"></div>
             </div>
+            <div class="textflex">
+                <div><label>Betűtípus:</label></div>
+                <select name="font_choice">
+                    {% for font in fonts %}
+                    <option value="{{ font }}">{{ font.split('.')[0] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
         </div>
         <input type="submit" value="Feltöltés és Futtatás">
     </form>
+
 </body>
+
 </html>

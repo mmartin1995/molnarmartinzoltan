@@ -17,6 +17,8 @@ def allowed_file(filename):
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_and_run_scripts():
+    font_files = [f for f in os.listdir('fonts') if f.endswith('.ttf')]
+
     if request.method == 'POST':
         # Fájl feltöltése
         if 'file' not in request.files:
@@ -34,6 +36,10 @@ def upload_and_run_scripts():
             book_title = request.form.get('book_title', 'Könyv hosszú címe')
             subtitle = request.form.get('subtitle', 'Rövid leírás')
 
+            # Font kiválasztása
+            font_choice = request.form.get('font_choice', 'Poppins-Regular.ttf')
+            font_path = os.path.join('fonts', font_choice)
+
             # Szkriptek futtatása
             script_directory = 'scripts'
             output_directory = 'output_directory'
@@ -47,7 +53,7 @@ def upload_and_run_scripts():
                 scripts = [f for f in os.listdir(script_directory) if os.path.isfile(os.path.join(script_directory, f)) and f.endswith('.py')]
                 for script in scripts:
                     # Futtassa a szkripteket az új argumentumokkal
-                    command = f'python {os.path.join(script_directory, script)} "{file_path}" "{output_directory}" "{author_name}" "{book_title}" "{subtitle}"'
+                    command = f'python {os.path.join(script_directory, script)} "{file_path}" "{output_directory}" "{author_name}" "{book_title}" "{subtitle}" "{font_path}"'
 
                     print(f"Futtatandó parancs: {command}")  # Ez kiírja a parancsot
 
@@ -80,7 +86,7 @@ def upload_and_run_scripts():
                 return "Hiba történt a scriptek futtatása közben: " + str(e)
 
     # GET kérés esetén az űrlap megjelenítése
-    return render_template('upload_and_run.html')
+    return render_template('upload_and_run.html', fonts=font_files)
 
 @app.route('/download/<path:zip_name>')  # <-- Új: útvonal a ZIP fájl letöltéséhez
 def download(zip_name):
