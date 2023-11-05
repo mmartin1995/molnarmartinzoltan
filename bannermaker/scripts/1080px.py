@@ -180,7 +180,12 @@ def wrap_text(text, font, max_width):
             lines.append(current_line.strip())
     return lines
 
-def replace_book_cover(background_path, cover_path, output_path, texts, output_directory):
+def add_logo(image, logo_path, position=(0, 0)):
+    logo = Image.open(logo_path).convert("RGBA")
+    image.paste(logo, position, logo)  # Második logo a maszkra utal, ha PNG-vel van dolgunk
+    return image
+
+def replace_book_cover(background_path, cover_path, output_path, texts, output_directory, logo_path):
     background = Image.open(background_path).convert('RGBA')
     background = resize_and_center_image(background, 1080)
     background = blur_background(background, PRESET_BLUR_RADIUS)
@@ -201,11 +206,13 @@ def replace_book_cover(background_path, cover_path, output_path, texts, output_d
 
     # Itt adjuk hozzá a szövegeket
     final_image = add_texts(final_image, texts)
+    # Logó hozzáadása
+    final_image = add_logo(final_image, logo_path, position=(PRESET_X_POSITION, 50))  # Feltételezett logó pozíció
 
     final_image.save(os.path.join(output_directory, output_path), "PNG")
 
 # Fő program indítása
-def main(input_file_path, output_directory, author_name, book_title, subtitle, font_path):
+def main(input_file_path, output_directory, author_name, book_title, subtitle, font_path, logo_path):
     preset_texts = get_preset_texts(author_name, book_title, subtitle, font_path)
 
     configurations = [
@@ -217,7 +224,7 @@ def main(input_file_path, output_directory, author_name, book_title, subtitle, f
     ]
 
     for config in configurations:
-        replace_book_cover(config["background"], config["cover"], config["output"], preset_texts, output_directory)
+        replace_book_cover(config["background"], config["cover"], config["output"], preset_texts, output_directory, logo_path)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Könyvborító kép generálása.')
@@ -227,6 +234,7 @@ if __name__ == '__main__':
     parser.add_argument('book_title', help='A könyv címe')
     parser.add_argument('subtitle', help='A könyv alcíme')
     parser.add_argument('font_path', help='A betűtípus elérési útja')
+    parser.add_argument('logo_path', help='A logó képének útvonala.')
 
     args = parser.parse_args()
 
@@ -235,4 +243,4 @@ if __name__ == '__main__':
         os.makedirs(args.output_directory)
 
     # A fő program elindítása az új argumentumokkal
-    main(args.input_file_path, args.output_directory, args.author_name, args.book_title, args.subtitle, args.font_path)
+    main(args.input_file_path, args.output_directory, args.author_name, args.book_title, args.subtitle, args.font_path, args.logo_path)

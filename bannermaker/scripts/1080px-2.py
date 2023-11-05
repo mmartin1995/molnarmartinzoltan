@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 import os
-from werkzeug.utils import secure_filename
 import sys
+import argparse
 
 # Előre beállított értékek
 PRESET_BLUR_RADIUS = 0  # background blur mértéke
@@ -14,29 +14,30 @@ PRESET_SHADOW_OFFSET = (5, 5)  # Árnyék eltolása
 OUTPUT_DIRECTORY = "output_directory"
 
 # Szöveg beállítások
-PRESET_TEXTS = [
-    {
-        "text": "Szerző Neve",
-        "font": "Poppins-Regular.ttf",  # a betűtípus fájlneve
-        "size": 50,
-        "color": "#FFFFFF",
-        "position": (540, 370)
-    },
-    {
-        "text": "Könyv hosszú címe",
-        "font": "Poppins-Regular.ttf",
-        "size": 80,
-        "color": "#FFFFFF",
-        "position": (540, 450)
-    },
-    {
-        "text": "Lorem ipsum  dolor sit amet.",
-        "font": "Poppins-Regular.ttf",
-        "size": 35,
-        "color": "#FFFFFF",
-        "position": (540, 600)
-    }
-]
+def get_preset_texts(author_name, book_title, subtitle, font_path):
+    return [
+        {
+            "text": author_name,
+            "font": font_path,
+            "size": 50,
+            "color": "#FFFFFF",
+            "position": (540, 370)
+        },
+        {
+            "text": book_title,
+            "font": font_path,
+            "size": 80,
+            "color": "#FFFFFF",
+            "position": (540, 450)
+        },
+        {
+            "text": subtitle,
+            "font": font_path,
+            "size": 35,
+            "color": "#FFFFFF",
+            "position": (540, 600)
+        }
+    ]
 
 def hex_to_rgba(hex_code):
     """Konvertálja a hexadecimális színkódot RGBA formátumba egy fix opacitással."""
@@ -94,23 +95,20 @@ def add_shadow(image, offset=PRESET_SHADOW_OFFSET, shadow_color=None, blur_radiu
     return shadow
 
 
-def resize_and_center_image(image, target_width=1080, target_height=1920):
+def resize_and_center_image(image, target_size):
     original_width, original_height = image.size
-    width_ratio = target_width / original_width
-    height_ratio = target_height / original_height
-    ratio = max(width_ratio, height_ratio)
+    ratio = max(target_size / original_width, target_size / original_height)
     new_width = int(original_width * ratio)
     new_height = int(original_height * ratio)
 
     image = image.resize((new_width, new_height), Image.LANCZOS)
 
-    new_image = Image.new('RGBA', (target_width, target_height), (255, 255, 255, 0))
-    left = (target_width - new_width) // 2
-    top = (target_height - new_height) // 2
+    new_image = Image.new('RGBA', (target_size, target_size), (255, 255, 255, 0))
+    left = (target_size - new_width) // 2
+    top = (target_size - new_height) // 2
     new_image.paste(image, (left, top))
 
     return new_image
-
 
 def blur_background(image, blur_radius):
     return image.filter(ImageFilter.GaussianBlur(blur_radius))
@@ -182,7 +180,12 @@ def wrap_text(text, font, max_width):
             lines.append(current_line.strip())
     return lines
 
-def replace_book_cover(background_path, cover_path, output_path):
+def add_logo(image, logo_path, position=(0, 0)):
+    logo = Image.open(logo_path).convert("RGBA")
+    image.paste(logo, position, logo)  # Második logo a maszkra utal, ha PNG-vel van dolgunk
+    return image
+
+def replace_book_cover(background_path, cover_path, output_path, texts, output_directory, logo_path):
     background = Image.open(background_path).convert('RGBA')
     background = resize_and_center_image(background, 1080)
     background = blur_background(background, PRESET_BLUR_RADIUS)
@@ -202,28 +205,42 @@ def replace_book_cover(background_path, cover_path, output_path):
     final_image.paste(cover_with_shadow, (PRESET_X_POSITION, y_position), cover_with_shadow)
 
     # Itt adjuk hozzá a szövegeket
-    final_image = add_texts(final_image, PRESET_TEXTS)
+    final_image = add_texts(final_image, texts)
+    # Logó hozzáadása
+    final_image = add_logo(final_image, logo_path, position=(PRESET_X_POSITION, 50))  # Feltételezett logó pozíció
 
-    final_image.save(os.path.join(OUTPUT_DIRECTORY, output_path), "PNG")
+    final_image.save(os.path.join(output_directory, output_path), "PNG")
 
 # Fő program indítása
-def main(input_file_path):  # Módosítja a main függvényt, hogy fogadja az input_file_path paramétert
-    if not os.path.exists(OUTPUT_DIRECTORY):
-        os.makedirs(OUTPUT_DIRECTORY)
+def main(input_file_path, output_directory, author_name, book_title, subtitle, font_path, logo_path):
+    preset_texts = get_preset_texts(author_name, book_title, subtitle, font_path)
+
     configurations = [
         {
-            "background": input_file_path,  # Használja az input_file_path-t
-            "cover": input_file_path,  # Használja az input_file_path-t
-            "output": "1080x1920output1.png"
+            "background": input_file_path,
+            "cover": input_file_path,
+            "output": "1080output1.png"
         }
     ]
 
     for config in configurations:
-        replace_book_cover(config["background"], config["cover"], config["output"])
+        replace_book_cover(config["background"], config["cover"], config["output"], preset_texts, output_directory, logo_path)
 
-if __name__ == "__main__":
-    input_file_path = sys.argv[1] if len(sys.argv) > 1 else None  # Fogadja az argumentumot a parancssorból
-    if input_file_path:
-        main(input_file_path)  # Hívja meg a main függvényt az input_file_path paraméterrel
-    else:
-        print("Hiba: Nincs megadva bemeneti fájl elérési útja.")
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Könyvborító kép generálása.')
+    parser.add_argument('input_file_path', help='Az eredeti kép elérési útja')
+    parser.add_argument('output_directory', help='A kimeneti könyvtár elérési útja')
+    parser.add_argument('author_name', help='A szerző neve')
+    parser.add_argument('book_title', help='A könyv címe')
+    parser.add_argument('subtitle', help='A könyv alcíme')
+    parser.add_argument('font_path', help='A betűtípus elérési útja')
+    parser.add_argument('logo_path', help='A logó képének útvonala.')
+
+    args = parser.parse_args()
+
+    # Létrehozzuk a kimeneti könyvtárat, ha még nem létezik
+    if not os.path.exists(args.output_directory):
+        os.makedirs(args.output_directory)
+
+    # A fő program elindítása az új argumentumokkal
+    main(args.input_file_path, args.output_directory, args.author_name, args.book_title, args.subtitle, args.font_path, args.logo_path)

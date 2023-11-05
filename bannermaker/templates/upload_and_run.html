@@ -148,7 +148,14 @@
                     {% endfor %}
                 </select>
             </div>
-
+            <div class="textflex">
+                <div><label>Logó:</label></div>
+                <select name="logo_choice">
+                    {% for logo in logos %}
+                    <option value="{{ logo }}">{{ logo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
         <input type="submit" value="Feltöltés és Futtatás">
     </form>
