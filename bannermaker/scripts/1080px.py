@@ -219,7 +219,7 @@ def main(input_file_path, output_directory, author_name, book_title, subtitle, f
         {
             "background": input_file_path,
             "cover": input_file_path,
-            "output": "1080output1.png"
+            "output": "1080output-1.png"
         }
     ]
 
