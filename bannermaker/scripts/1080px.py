@@ -14,27 +14,27 @@ PRESET_SHADOW_OFFSET = (5, 5)  # Árnyék eltolása
 OUTPUT_DIRECTORY = "output_directory"
 
 # Szöveg beállítások
-def get_preset_texts(author_name, book_title, subtitle, font_path):
+def get_preset_texts(author_name, book_title, subtitle, font_path, color_code):
     return [
         {
             "text": author_name,
             "font": font_path,
             "size": 50,
-            "color": "#FFFFFF",
+            "color": color_code,
             "position": (540, 370)
         },
         {
             "text": book_title,
             "font": font_path,
             "size": 80,
-            "color": "#FFFFFF",
+            "color": color_code,
             "position": (540, 450)
         },
         {
             "text": subtitle,
             "font": font_path,
             "size": 35,
-            "color": "#FFFFFF",
+            "color": color_code,
             "position": (540, 600)
         }
     ]
@@ -180,9 +180,15 @@ def wrap_text(text, font, max_width):
             lines.append(current_line.strip())
     return lines
 
-def add_logo(image, logo_path, position=(0, 0)):
+def add_logo(image, logo_path, right_offset=35, bottom_offset=37):
     logo = Image.open(logo_path).convert("RGBA")
-    image.paste(logo, position, logo)  # Második logo a maszkra utal, ha PNG-vel van dolgunk
+    image_width, image_height = image.size
+    logo_width, logo_height = logo.size
+
+    # A logó pozíciójának kiszámítása úgy, hogy jobbról és alulról az adott távolságra legyen
+    position = (image_width - logo_width - right_offset, image_height - logo_height - bottom_offset)
+
+    image.paste(logo, position, logo)
     return image
 
 def replace_book_cover(background_path, cover_path, output_path, texts, output_directory, logo_path):
@@ -207,13 +213,13 @@ def replace_book_cover(background_path, cover_path, output_path, texts, output_d
     # Itt adjuk hozzá a szövegeket
     final_image = add_texts(final_image, texts)
     # Logó hozzáadása
-    final_image = add_logo(final_image, logo_path, position=(PRESET_X_POSITION, 50))  # Feltételezett logó pozíció
+    final_image = add_logo(final_image, logo_path)
 
     final_image.save(os.path.join(output_directory, output_path), "PNG")
 
 # Fő program indítása
-def main(input_file_path, output_directory, author_name, book_title, subtitle, font_path, logo_path):
-    preset_texts = get_preset_texts(author_name, book_title, subtitle, font_path)
+def main(input_file_path, output_directory, author_name, book_title, subtitle, font_path, logo_path, color_code):
+    preset_texts = get_preset_texts(author_name, book_title, subtitle, font_path, color_code)
 
     configurations = [
         {
@@ -235,6 +241,7 @@ if __name__ == '__main__':
     parser.add_argument('subtitle', help='A könyv alcíme')
     parser.add_argument('font_path', help='A betűtípus elérési útja')
     parser.add_argument('logo_path', help='A logó képének útvonala.')
+    parser.add_argument('color_code', help='A szöveg színkódja hexadecimális formátumban.')
 
     args = parser.parse_args()
 
@@ -243,4 +250,13 @@ if __name__ == '__main__':
         os.makedirs(args.output_directory)
 
     # A fő program elindítása az új argumentumokkal
-    main(args.input_file_path, args.output_directory, args.author_name, args.book_title, args.subtitle, args.font_path, args.logo_path)
+    main(
+        args.input_file_path,
+        args.output_directory,
+        args.author_name,
+        args.book_title,
+        args.subtitle,
+        args.font_path,
+        args.logo_path,
+        args.color_code
+    )

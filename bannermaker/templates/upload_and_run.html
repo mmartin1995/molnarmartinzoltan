@@ -50,17 +50,18 @@
             border: .2px solid rgb(85, 85, 85);
             margin: auto;
             cursor: pointer;
-            padding: 10px 20px;
             display: inline-block;
         }
 
         input[type="text"] {
             width: 30vw;
             cursor: auto;
+            padding: 10px 20px;
         }
 
         input[type="file"] {
             text-align: center;
+            padding: 10px 20px;
         }
 
         input[type="submit"] {
@@ -129,6 +130,13 @@
         <div class="textcontainer">
             <h2>Szövegek megadása:</h2>
             <div class="textflex">
+                <div><label>Választott szín:</label></div>
+                <div>
+                    <input type="color" id="colorPicker" name="chosen_color" value="#ffffff">
+                    <span id="colorValue">#ffffff</span>
+                </div>
+            </div>
+            <div class="textflex">
                 <div><label>Szerző Neve:</label></div>
                 <div><input type="text" name="author_name" placeholder="Szerző Neve"></div>
             </div>
@@ -159,7 +167,22 @@
         </div>
         <input type="submit" value="Feltöltés és Futtatás">
     </form>
+    <script>
+        // Színválasztó és színértékek elemek kiválasztása
+        const colorPicker = document.getElementById('colorPicker');
+        const colorValue = document.getElementById('colorValue');
 
+        // Funkció a szín változás kezelésére
+        function updateColorValue() {
+            colorValue.textContent = colorPicker.value;
+        }
+
+        // Eseményfigyelő hozzáadása a színválasztóhoz
+        colorPicker.addEventListener('input', updateColorValue);
+
+        // Kezdeti érték beállítása
+        updateColorValue();
+    </script>
 </body>
 
 </html>

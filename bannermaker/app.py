@@ -37,6 +37,9 @@ def upload_and_run_scripts():
             book_title = request.form.get('book_title', 'Könyv hosszú címe')
             subtitle = request.form.get('subtitle', 'Rövid leírás')
 
+            # Szín beolvasása
+            chosen_color = request.form.get('chosen_color', '#ffffff')
+
             # Font kiválasztása
             font_choice = request.form.get('font_choice', 'Poppins-Regular.ttf')
             font_path = os.path.join('fonts', font_choice)
@@ -58,7 +61,7 @@ def upload_and_run_scripts():
                 scripts = [f for f in os.listdir(script_directory) if os.path.isfile(os.path.join(script_directory, f)) and f.endswith('.py')]
                 for script in scripts:
                     # Futtassa a szkripteket az új argumentumokkal
-                    command = f'python {os.path.join(script_directory, script)} "{file_path}" "{output_directory}" "{author_name}" "{book_title}" "{subtitle}" "{font_path}" "{logo_path}"'
+                    command = f'python {os.path.join(script_directory, script)} "{file_path}" "{output_directory}" "{author_name}" "{book_title}" "{subtitle}" "{font_path}" "{logo_path}" "{chosen_color}"'
 
                     print(f"Futtatandó parancs: {command}")  # Ez kiírja a parancsot
 
