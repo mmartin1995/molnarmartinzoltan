@@ -180,18 +180,36 @@ def wrap_text(text, font, max_width):
             lines.append(current_line.strip())
     return lines
 
-def add_logo(image, logo_path, right_offset=35, bottom_offset=37):
-    logo = Image.open(logo_path).convert("RGBA")
-    image_width, image_height = image.size
-    logo_width, logo_height = logo.size
+def tint_image(image, color):
+    # Tint the image with the given color
+    tinted_image = Image.new('RGBA', image.size)
+    draw = ImageDraw.Draw(tinted_image)
 
-    # A logó pozíciójának kiszámítása úgy, hogy jobbról és alulról az adott távolságra legyen
+    for x in range(image.width):
+        for y in range(image.height):
+            r, g, b, a = image.getpixel((x, y))
+            draw.point((x, y), fill=(color[0], color[1], color[2], a))
+
+    return tinted_image
+
+def add_logo(image, logo_path, color_code, right_offset=35, bottom_offset=37):
+    logo = Image.open(logo_path).convert("RGBA")
+
+    # Convert the color code to an RGBA color
+    logo_color = hex_to_rgba(color_code)
+    # Tint the logo with the new color
+    tinted_logo = tint_image(logo, logo_color)
+
+    image_width, image_height = image.size
+    logo_width, logo_height = tinted_logo.size
+
+    # Calculate the position for the logo, with the specified offsets from the right and bottom edges
     position = (image_width - logo_width - right_offset, image_height - logo_height - bottom_offset)
 
-    image.paste(logo, position, logo)
+    image.paste(tinted_logo, position, tinted_logo)
     return image
 
-def replace_book_cover(background_path, cover_path, output_path, texts, output_directory, logo_path):
+def replace_book_cover(background_path, cover_path, output_path, texts, output_directory, logo_path, color_code):
     background = Image.open(background_path).convert('RGBA')
     background = resize_and_center_image(background, 1080)
     background = blur_background(background, PRESET_BLUR_RADIUS)
@@ -213,7 +231,7 @@ def replace_book_cover(background_path, cover_path, output_path, texts, output_d
     # Itt adjuk hozzá a szövegeket
     final_image = add_texts(final_image, texts)
     # Logó hozzáadása
-    final_image = add_logo(final_image, logo_path)
+    final_image = add_logo(final_image, logo_path, color_code)
 
     final_image.save(os.path.join(output_directory, output_path), "PNG")
 
@@ -230,7 +248,7 @@ def main(input_file_path, output_directory, author_name, book_title, subtitle, f
     ]
 
     for config in configurations:
-        replace_book_cover(config["background"], config["cover"], config["output"], preset_texts, output_directory, logo_path)
+        replace_book_cover(config["background"], config["cover"], config["output"], preset_texts, output_directory, logo_path, color_code)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Könyvborító kép generálása.')
@@ -241,7 +259,7 @@ if __name__ == '__main__':
     parser.add_argument('subtitle', help='A könyv alcíme')
     parser.add_argument('font_path', help='A betűtípus elérési útja')
     parser.add_argument('logo_path', help='A logó képének útvonala.')
-    parser.add_argument('color_code', help='A szöveg színkódja hexadecimális formátumban.')
+    parser.add_argument('color_code', help='A szövegek színe hexadecimális kódban')
 
     args = parser.parse_args()
 
@@ -250,13 +268,4 @@ if __name__ == '__main__':
         os.makedirs(args.output_directory)
 
     # A fő program elindítása az új argumentumokkal
-    main(
-        args.input_file_path,
-        args.output_directory,
-        args.author_name,
-        args.book_title,
-        args.subtitle,
-        args.font_path,
-        args.logo_path,
-        args.color_code
-    )
+    main(args.input_file_path, args.output_directory, args.author_name, args.book_title, args.subtitle, args.font_path, args.logo_path, args.color_code)
