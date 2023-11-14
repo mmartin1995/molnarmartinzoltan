@@ -21,21 +21,24 @@ def get_preset_texts(author_name, book_title, subtitle, font_path, color_code):
             "font": font_path,
             "size": 50,
             "color": color_code,
-            "position": (540, 370)
+            "position": (540, 370),
+            "max_width": 400
         },
         {
             "text": book_title,
             "font": font_path,
             "size": 80,
             "color": color_code,
-            "position": (540, 450)
+            "position": (540, 450),
+            "max_width": 400
         },
         {
             "text": subtitle,
             "font": font_path,
             "size": 35,
             "color": color_code,
-            "position": (540, 600)
+            "position": (540, 600),
+            "max_width": 400
         }
     ]
 
@@ -135,7 +138,7 @@ def add_texts(image, texts):
 
         if max_width:
             lines = wrap_text(text, font, max_width)
-            line_height = font.getsize('A')[1]
+            line_height = font.getbbox('A')[3] - font.getbbox('A')[1]
             x, y = position
             for line in lines:
                 # Itt rajzoljuk meg az árnyékkal ellátott szöveget
@@ -159,18 +162,16 @@ def draw_text_with_shadow(draw, text, position, font, text_color, shadow_color, 
 
 
 def wrap_text(text, font, max_width):
-    """
-    Megtöri a szöveget több sorba, ha meghaladja a megadott maximális szélességet.
-    """
+    # Megtöri a szöveget több sorba, ha meghaladja a megadott maximális szélességet.
     lines = []
-    if font.getsize(text)[0] <= max_width:
+    if font.getbbox(text)[2] <= max_width:  # Az [2] index a szélesség a visszatérített tuple-ban.
         lines.append(text)
     else:
         words = text.split(' ')
         current_line = ''
         for word in words:
             test_line = current_line + word + ' '
-            test_line_width = font.getsize(test_line)[0]
+            test_line_width = font.getbbox(test_line)[2]  # És itt is az [2] index a szélesség.
             if test_line_width <= max_width:
                 current_line = test_line
             else:

@@ -1,16 +1,18 @@
 import os
 import subprocess
-import shutil  # A tömörítéshez szükséges
+import shutil
 from flask import Flask, request, redirect, url_for, render_template, send_from_directory
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg'}
-ZIP_FOLDER = 'zips'  # A zip fájlok tárolásához
+ZIP_FOLDER = 'zips'
+OUTPUT_FOLDER = 'output_directory'
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['ZIP_FOLDER'] = ZIP_FOLDER
+app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -83,7 +85,7 @@ def upload_and_run_scripts():
                 shutil.make_archive(os.path.splitext(zip_path)[0], 'zip', root_dir=output_directory, base_dir='.')
 
                 # A letöltési oldalra irányítja a felhasználót
-                return render_template('download.html', zip_name=zip_name)
+                return render_template('upload_and_run.html', processing_complete=True, zip_name=zip_name, fonts=font_files, logos=logo_files)
 
             except subprocess.CalledProcessError as e:
                 print(f"Hiba történt a parancs futtatása közben: {e}")  # Kiírja a hibaüzenetet
@@ -96,9 +98,9 @@ def upload_and_run_scripts():
     # GET kérés esetén az űrlap megjelenítése
     return render_template('upload_and_run.html', fonts=font_files, logos=logo_files)
 
-@app.route('/download/<path:zip_name>')  # <-- Új: útvonal a ZIP fájl letöltéséhez
-def download(zip_name):
-    return send_from_directory(app.config['ZIP_FOLDER'], zip_name, as_attachment=True)  # <-- Új
+@app.route('/download_file/<filename>')
+def download_file(filename):
+    return send_from_directory(app.config['ZIP_FOLDER'], filename, as_attachment=True)
 
 if __name__ == "__main__":
     if not os.path.exists(UPLOAD_FOLDER):
