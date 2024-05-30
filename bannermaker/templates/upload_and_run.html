@@ -10,9 +10,12 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
         rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="contents/favicon-1.jpg">
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
+            width: 80vw;
+            margin: auto;
         }
 
         h1 {
@@ -20,6 +23,7 @@
             text-align: center;
             font-weight: 700;
             margin: 25px auto;
+            margin-top: 5vh;
         }
 
         h2 {
@@ -43,14 +47,14 @@
         select {
             text-decoration: none;
             box-sizing: border-box;
-            font-family: 'Montserrat', sans-serif;
             font-size: 1vw;
             border-radius: 5px;
             box-shadow: 1px 1px 5px black;
             border: .2px solid rgb(85, 85, 85);
-            margin: auto;
+            margin-right: 0;
             cursor: pointer;
             display: inline-block;
+            width: 30vw;
         }
 
         input[type="text"] {
@@ -62,6 +66,8 @@
         input[type="file"] {
             text-align: center;
             padding: 10px 20px;
+            width: 20vw;
+            box-sizing: content-box;
         }
 
         input[type="submit"] {
@@ -75,15 +81,16 @@
         }
 
         .button {
-            position: fixed;
             cursor: pointer;
-            font-family: 'Montserrat', sans-serif;
-            width: 25vw;
+            width: 20vw;
             box-shadow: 1px 1px 5px black;
             border-radius: 5px;
-            font-size: 1vw;
+            font-size: 1.5vw;
             padding: 10px 20px;
-            display: flex;
+            display: block;
+            margin: 1vw auto;
+            text-align: center;
+            font-weight: bold;
         }
 
         .button a {
@@ -115,13 +122,17 @@
             text-align: center;
 
         }
+
+        select {
+            padding: 10px 20px;
+        }
     </style>
 </head>
 
 <body>
-    <h1>Fájl Feltöltése és Szkriptek Futtatása</h1>
+    <h1>Banner Maker</h1>
 
-    <div class="button"><a href="/">Vissza a Főoldalra</a></div>
+    <div class="button"><a href="/">Főoldal</a></div>
     <form action="/" method="POST" enctype="multipart/form-data" id="uploadForm">
         <input type="file" name="file">
         <div class="textcontainer">
@@ -129,8 +140,8 @@
             <div class="textflex">
                 <div><label>Választott szín:</label></div>
                 <div>
-                    <input type="color" id="colorPicker" name="chosen_color" value="#ffffff">
                     <span id="colorValue">#ffffff</span>
+                    <input type="color" id="colorPicker" name="chosen_color" value="#ffffff">
                 </div>
             </div>
             <div class="textflex">
