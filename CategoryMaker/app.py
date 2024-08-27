@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 # Blueprint létrehozása
-category_blueprint = Blueprint('category', __name__, template_folder='templates')
+category_blueprint = Blueprint('category', __name__, template_folder='../htmls')
 
 @category_blueprint.route('/')
 def upload_file():

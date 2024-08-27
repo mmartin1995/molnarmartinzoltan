@@ -3,7 +3,7 @@ import os
 from PIL import Image
 
 # Blueprint létrehozása
-webp_blueprint = Blueprint('webp', __name__, template_folder='templates')
+webp_blueprint = Blueprint('webp', __name__, template_folder='../htmls')
 
 UPLOAD_FOLDER = 'uploads'
 OUTPUT_FOLDER = 'output'
@@ -12,6 +12,12 @@ webp_blueprint.config = {
     'UPLOAD_FOLDER': UPLOAD_FOLDER,
     'OUTPUT_FOLDER': OUTPUT_FOLDER
 }
+
+# A szükséges mappák létrehozása, ha még nem léteznek
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+if not os.path.exists(OUTPUT_FOLDER):
+    os.makedirs(OUTPUT_FOLDER)
 
 def convert_image_to_webp(input_path, output_path, target_size_kb=100):
     with Image.open(input_path) as img:

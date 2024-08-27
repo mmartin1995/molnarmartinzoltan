@@ -5,7 +5,7 @@ import os
 # Blueprint létrehozása
 from flask import Blueprint
 
-matrix_blueprint = Blueprint('matrix', __name__, template_folder='templates')
+matrix_blueprint = Blueprint('matrix', __name__, template_folder='../htmls')
 
 UPLOAD_FOLDER = 'uploads'
 OUTPUT_FOLDER = 'output'

@@ -1,16 +1,16 @@
 import os
 import subprocess
 import shutil
-from flask import Flask, Blueprint, request, redirect, url_for, render_template, send_from_directory
+from flask import Blueprint, request, redirect, render_template, send_from_directory
 from werkzeug.utils import secure_filename
 
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg'}
-ZIP_FOLDER = 'zips'
-OUTPUT_FOLDER = 'output_directory'
+ZIP_FOLDER = os.path.join(os.path.dirname(__file__), 'zips')
+OUTPUT_FOLDER = os.path.join(os.path.dirname(__file__), 'output_directory')
 
 # Blueprint létrehozása
-bannermaker_blueprint = Blueprint('banner', __name__, template_folder='templates')
+bannermaker_blueprint = Blueprint('bannermaker', __name__, template_folder='../htmls')
 
 # Konfigurációk beállítása
 bannermaker_blueprint.config = {
@@ -25,8 +25,8 @@ def allowed_file(filename):
 # Routes definiálása a Blueprint-ben
 @bannermaker_blueprint.route('/', methods=['GET', 'POST'])
 def upload_and_run_scripts():
-    font_files = [f for f in os.listdir('fonts') if f.endswith('.ttf')]
-    logo_files = [f for f in os.listdir('logos') if f.endswith('.png')]
+    font_files = [f for f in os.listdir(os.path.join(os.path.dirname(__file__), 'fonts')) if f.endswith('.ttf')]
+    logo_files = [f for f in os.listdir(os.path.join(os.path.dirname(__file__), 'logos')) if f.endswith('.png')]
 
     if request.method == 'POST':
         # Fájl feltöltése
@@ -50,14 +50,14 @@ def upload_and_run_scripts():
 
             # Font kiválasztása
             font_choice = request.form.get('font_choice', 'Poppins-Regular.ttf')
-            font_path = os.path.join('fonts', font_choice)
+            font_path = os.path.join(os.path.dirname(__file__), 'fonts', font_choice)
 
             # Logo kiválasztása
             logo_choice = request.form.get('logo_choice', 'default_logo.png')  # Feltételezve, hogy van alapértelmezett logó
-            logo_path = os.path.join('logos', logo_choice)
+            logo_path = os.path.join(os.path.dirname(__file__), 'logos', logo_choice)
 
             # Szkriptek futtatása
-            script_directory = 'scripts'
+            script_directory = os.path.join(os.path.dirname(__file__), 'scripts')
             output_directory = bannermaker_blueprint.config['OUTPUT_FOLDER']
 
             # Ellenőrizze, hogy létezik-e az output_directory, és ha nem, hozza létre
