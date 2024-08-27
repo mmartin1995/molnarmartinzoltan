@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def upload_file():
-    return render_template('upload.html')
+    return render_template('index.html')
 
 @app.route('/uploader', methods=['POST'])
 def uploader():

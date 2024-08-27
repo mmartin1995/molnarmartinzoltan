@@ -85,7 +85,7 @@ def upload_and_run_scripts():
                 shutil.make_archive(os.path.splitext(zip_path)[0], 'zip', root_dir=output_directory, base_dir='.')
 
                 # A letöltési oldalra irányítja a felhasználót
-                return render_template('upload_and_run.html', processing_complete=True, zip_name=zip_name, fonts=font_files, logos=logo_files)
+                return render_template('index.html', processing_complete=True, zip_name=zip_name, fonts=font_files, logos=logo_files)
 
             except subprocess.CalledProcessError as e:
                 print(f"Hiba történt a parancs futtatása közben: {e}")  # Kiírja a hibaüzenetet
@@ -96,7 +96,7 @@ def upload_and_run_scripts():
                 return "Hiba történt a scriptek futtatása közben: " + str(e)
 
     # GET kérés esetén az űrlap megjelenítése
-    return render_template('upload_and_run.html', fonts=font_files, logos=logo_files)
+    return render_template('index.html', fonts=font_files, logos=logo_files)
 
 @app.route('/download_file/<filename>')
 def download_file(filename):
