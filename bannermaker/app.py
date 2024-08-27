@@ -1,7 +1,7 @@
 import os
 import subprocess
 import shutil
-from flask import Flask, request, redirect, url_for, render_template, send_from_directory
+from flask import Flask, Blueprint, request, redirect, url_for, render_template, send_from_directory
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = 'uploads'
@@ -9,15 +9,21 @@ ALLOWED_EXTENSIONS = {'jpg', 'jpeg'}
 ZIP_FOLDER = 'zips'
 OUTPUT_FOLDER = 'output_directory'
 
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['ZIP_FOLDER'] = ZIP_FOLDER
-app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
+# Blueprint létrehozása
+banner_blueprint = Blueprint('banner', __name__, template_folder='templates')
+
+# Konfigurációk beállítása
+banner_blueprint.config = {
+    'UPLOAD_FOLDER': UPLOAD_FOLDER,
+    'ZIP_FOLDER': ZIP_FOLDER,
+    'OUTPUT_FOLDER': OUTPUT_FOLDER
+}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/', methods=['GET', 'POST'])
+# Routes definiálása a Blueprint-ben
+@banner_blueprint.route('/', methods=['GET', 'POST'])
 def upload_and_run_scripts():
     font_files = [f for f in os.listdir('fonts') if f.endswith('.ttf')]
     logo_files = [f for f in os.listdir('logos') if f.endswith('.png')]
@@ -31,7 +37,7 @@ def upload_and_run_scripts():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file_path = os.path.join(banner_blueprint.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
 
             # Szövegek beolvasása
@@ -52,7 +58,7 @@ def upload_and_run_scripts():
 
             # Szkriptek futtatása
             script_directory = 'scripts'
-            output_directory = 'output_directory'
+            output_directory = banner_blueprint.config['OUTPUT_FOLDER']
 
             # Ellenőrizze, hogy létezik-e az output_directory, és ha nem, hozza létre
             if not os.path.exists(output_directory):
@@ -75,11 +81,11 @@ def upload_and_run_scripts():
 
                 # A zip fájl nevének előkészítése
                 zip_name = os.path.splitext(filename)[0] + '.zip'
-                zip_path = os.path.join(app.config['ZIP_FOLDER'], zip_name)
+                zip_path = os.path.join(banner_blueprint.config['ZIP_FOLDER'], zip_name)
 
                 # Ellenőrizze, hogy létezik-e a ZIP_FOLDER, és ha nem, hozza létre
-                if not os.path.exists(app.config['ZIP_FOLDER']):
-                    os.makedirs(app.config['ZIP_FOLDER'])
+                if not os.path.exists(banner_blueprint.config['ZIP_FOLDER']):
+                    os.makedirs(banner_blueprint.config['ZIP_FOLDER'])
 
                 # A zip fájl létrehozása
                 shutil.make_archive(os.path.splitext(zip_path)[0], 'zip', root_dir=output_directory, base_dir='.')
@@ -98,13 +104,6 @@ def upload_and_run_scripts():
     # GET kérés esetén az űrlap megjelenítése
     return render_template('index.html', fonts=font_files, logos=logo_files)
 
-@app.route('/download_file/<filename>')
+@banner_blueprint.route('/download_file/<filename>')
 def download_file(filename):
-    return send_from_directory(app.config['ZIP_FOLDER'], filename, as_attachment=True)
-
-if __name__ == "__main__":
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
-    if not os.path.exists(ZIP_FOLDER):
-        os.makedirs(ZIP_FOLDER)
-    app.run(debug=True)
+    return send_from_directory(banner_blueprint.config['ZIP_FOLDER'], filename, as_attachment=True)
