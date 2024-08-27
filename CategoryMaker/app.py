@@ -7,7 +7,7 @@ category_blueprint = Blueprint('category', __name__, template_folder='templates'
 
 @category_blueprint.route('/')
 def upload_file():
-    return render_template('index.html')
+    return render_template('categorymaker.html')
 
 @category_blueprint.route('/uploader', methods=['POST'])
 def uploader():

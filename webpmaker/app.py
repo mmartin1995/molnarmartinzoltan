@@ -49,7 +49,7 @@ def upload_and_convert_image():
 
             return redirect(url_for('webp.download_file', filename=output_filename))
 
-    return render_template('upload.html')
+    return render_template('webpmaker.html')
 
 @webp_blueprint.route('/download/<filename>')
 def download_file(filename):

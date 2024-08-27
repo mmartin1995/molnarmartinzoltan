@@ -43,7 +43,7 @@ def upload_and_generate_matrix():
 
             return redirect(url_for('matrix.download_file', filename=output_filename))
 
-    return render_template('index.html')
+    return render_template('matrixmaker.html')
 
 @matrix_blueprint.route('/download/<filename>')
 def download_file(filename):
