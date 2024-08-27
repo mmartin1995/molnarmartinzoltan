@@ -1,10 +1,17 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
+import os
+
 from bannermaker.app import banner_blueprint
 from categorymaker.app import category_blueprint
 from matrixmaker.app import matrix_blueprint
 from webpmaker.app import webp_blueprint
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='.')
+
+# Statikus fájlok kezelése a főkönyvtárból
+@app.route('/<path:filename>')
+def custom_static(filename):
+    return send_from_directory(os.path.abspath(os.path.dirname(__file__)), filename)
 
 # Regisztráljuk a különböző alkalmazásokat Blueprintként
 app.register_blueprint(banner_blueprint, url_prefix='/bannermaker')
@@ -18,5 +25,4 @@ def index():
     return render_template('index.html')
 
 if __name__ == "__main__":
-    # Debug mód engedélyezése
     app.run(debug=True)
