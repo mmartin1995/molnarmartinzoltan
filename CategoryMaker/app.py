@@ -1,14 +1,15 @@
-from flask import Flask, request, render_template, send_file
+from flask import Blueprint, request, render_template, send_file
 import pandas as pd
 import os
 
-app = Flask(__name__)
+# Blueprint létrehozása
+category_blueprint = Blueprint('category', __name__, template_folder='templates')
 
-@app.route('/')
+@category_blueprint.route('/')
 def upload_file():
     return render_template('index.html')
 
-@app.route('/uploader', methods=['POST'])
+@category_blueprint.route('/uploader', methods=['POST'])
 def uploader():
     if 'file' not in request.files:
         return 'No file part'
@@ -61,6 +62,3 @@ def uploader():
 
         # Return the file for download
         return send_file(output_filename, as_attachment=True)
-
-if __name__ == '__main__':
-    app.run(debug=True)
