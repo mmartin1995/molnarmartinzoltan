@@ -1,13 +1,17 @@
-from flask import Flask, request, redirect, url_for, render_template, send_from_directory
+from flask import Blueprint, request, redirect, url_for, render_template, send_from_directory
 import os
 from PIL import Image
 
-app = Flask(__name__)
+# Blueprint létrehozása
+webp_blueprint = Blueprint('webp', __name__, template_folder='templates')
+
 UPLOAD_FOLDER = 'uploads'
 OUTPUT_FOLDER = 'output'
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
+webp_blueprint.config = {
+    'UPLOAD_FOLDER': UPLOAD_FOLDER,
+    'OUTPUT_FOLDER': OUTPUT_FOLDER
+}
 
 def convert_image_to_webp(input_path, output_path, target_size_kb=100):
     with Image.open(input_path) as img:
@@ -26,7 +30,7 @@ def convert_image_to_webp(input_path, output_path, target_size_kb=100):
 
                 quality -= 5
 
-@app.route('/', methods=['GET', 'POST'])
+@webp_blueprint.route('/', methods=['GET', 'POST'])
 def upload_and_convert_image():
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -35,25 +39,18 @@ def upload_and_convert_image():
         if file.filename == '':
             return redirect(request.url)
         if file:
-            filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            filename = os.path.join(webp_blueprint.config['UPLOAD_FOLDER'], file.filename)
             file.save(filename)
             
             # Konvertálás WebP formátumba
             output_filename = os.path.splitext(file.filename)[0] + '.webp'
-            output_path = os.path.join(app.config['OUTPUT_FOLDER'], output_filename)
+            output_path = os.path.join(webp_blueprint.config['OUTPUT_FOLDER'], output_filename)
             convert_image_to_webp(filename, output_path)
 
-            return redirect(url_for('download_file', filename=output_filename))
+            return redirect(url_for('webp.download_file', filename=output_filename))
 
     return render_template('upload.html')
 
-@app.route('/download/<filename>')
+@webp_blueprint.route('/download/<filename>')
 def download_file(filename):
-    return send_from_directory(app.config['OUTPUT_FOLDER'], filename, as_attachment=True)
-
-if __name__ == "__main__":
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
-    if not os.path.exists(OUTPUT_FOLDER):
-        os.makedirs(OUTPUT_FOLDER)
-    app.run(debug=True)
+    return send_from_directory(webp_blueprint.config['OUTPUT_FOLDER'], filename, as_attachment=True)
