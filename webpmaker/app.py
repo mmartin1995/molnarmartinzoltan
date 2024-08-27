@@ -1,41 +1,59 @@
-from PIL import Image
+from flask import Flask, request, redirect, url_for, render_template, send_from_directory
 import os
+from PIL import Image
+
+app = Flask(__name__)
+UPLOAD_FOLDER = 'uploads'
+OUTPUT_FOLDER = 'output'
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
 
 def convert_image_to_webp(input_path, output_path, target_size_kb=100):
-    # Kép megnyitása
     with Image.open(input_path) as img:
         original_size_kb = os.path.getsize(input_path) / 1024  # KB-ban
 
-        # Ha az eredeti méret kisebb, mint a cél méret, konvertálás minőségveszteség nélkül
         if original_size_kb <= target_size_kb:
             img.save(output_path, 'WEBP')
         else:
-            # Minőség beállítása és méretcsökkentési próbálkozás, ha a kép mérete nagyobb, mint a cél méret
             quality = 95
             while quality > 0:
                 img.save(output_path, 'WEBP', quality=quality)
                 output_size_kb = os.path.getsize(output_path) / 1024
 
                 if output_size_kb <= target_size_kb:
-                    break  # A cél méret elérve, kilépés a ciklusból
+                    break
 
-                quality -= 5  # Csökkentjük a minőséget, ha a fájl mérete még mindig túl nagy
+                quality -= 5
 
-def convert_images_to_webp(input_folder, output_folder, max_size_kb=100):
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-
-    for filename in os.listdir(input_folder):
-        if filename.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
-            input_path = os.path.join(input_folder, filename)
+@app.route('/', methods=['GET', 'POST'])
+def upload_and_convert_image():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '':
+            return redirect(request.url)
+        if file:
+            filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            file.save(filename)
             
-            # Ha a fájl már .webp formátumú, akkor ne változtassuk meg a kiterjesztést
-            if filename.lower().endswith('.webp'):
-                output_path = os.path.join(output_folder, filename)
-            else:
-                output_path = os.path.join(output_folder, os.path.splitext(filename)[0] + '.webp')
+            # Konvertálás WebP formátumba
+            output_filename = os.path.splitext(file.filename)[0] + '.webp'
+            output_path = os.path.join(app.config['OUTPUT_FOLDER'], output_filename)
+            convert_image_to_webp(filename, output_path)
 
-            convert_image_to_webp(input_path, output_path, target_size_kb=max_size_kb)
+            return redirect(url_for('download_file', filename=output_filename))
+
+    return render_template('upload.html')
+
+@app.route('/download/<filename>')
+def download_file(filename):
+    return send_from_directory(app.config['OUTPUT_FOLDER'], filename, as_attachment=True)
 
 if __name__ == "__main__":
-    convert_images_to_webp("input", "output")
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+    if not os.path.exists(OUTPUT_FOLDER):
+        os.makedirs(OUTPUT_FOLDER)
+    app.run(debug=True)
