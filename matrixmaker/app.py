@@ -29,13 +29,23 @@ def upload_and_generate_matrix():
             
             # Mátrix generálása
             df = pd.read_excel(filename)
+            df = df[df['Mennyiség'] > 0]  # Negatív mennyiségek kizárása
+
             unique_categories = df['Kategória'].unique()
             matrix_df = pd.DataFrame(0, index=unique_categories, columns=unique_categories)
 
             for order_id in df['Rendelésazonosító'].unique():
-                categories_in_order = df[df['Rendelésazonosító'] == order_id]['Kategória'].unique()
-                for category in categories_in_order:
-                    matrix_df.loc[category, categories_in_order] += 1
+                order_df = df[df['Rendelésazonosító'] == order_id]
+                
+                # Kategóriák és mennyiségek alapján szimmetrikus frissítés
+                for i, row in order_df.iterrows():
+                    category = row['Kategória']
+                    quantity = row['Mennyiség']
+                    categories_in_order = order_df['Kategória'].unique()
+                    
+                    for related_category in categories_in_order:
+                        matrix_df.loc[category, related_category] += quantity
+                        matrix_df.loc[related_category, category] += quantity  # Szimmetrikus frissítés
 
             output_filename = 'Kategória_matrix.xlsx'
             output_path = os.path.join(matrix_blueprint.config['OUTPUT_FOLDER'], output_filename)

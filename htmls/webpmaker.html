@@ -7,9 +7,9 @@
 </head>
 <body>
     <div class="button"><a href="/">Főoldal</a></div>
-    <h1>Upload an Image to Convert to WebP</h1>
+    <h1>Upload Images to Convert to WebP</h1>
     <form action="/webpmaker/" method="POST" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".jpg,.jpeg,.png">
+        <input type="file" name="files" accept=".jpg,.jpeg,.png" multiple>
         <input type="submit" value="Convert to WebP">
     </form>
 </body>

@@ -1,6 +1,8 @@
-from flask import Blueprint, request, redirect, url_for, render_template, send_from_directory
+from flask import Blueprint, request, redirect, url_for, render_template, send_from_directory, send_file
 import os
+import zipfile
 from PIL import Image
+from io import BytesIO
 
 # Blueprint létrehozása
 webp_blueprint = Blueprint('webp', __name__, template_folder='../htmls')
@@ -19,7 +21,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 if not os.path.exists(OUTPUT_FOLDER):
     os.makedirs(OUTPUT_FOLDER)
 
-def convert_image_to_webp(input_path, output_path, target_size_kb=100):
+def convert_image_to_webp(input_path, output_path, target_size_kb=400):
     with Image.open(input_path) as img:
         original_size_kb = os.path.getsize(input_path) / 1024  # KB-ban
 
@@ -37,26 +39,38 @@ def convert_image_to_webp(input_path, output_path, target_size_kb=100):
                 quality -= 5
 
 @webp_blueprint.route('/', methods=['GET', 'POST'])
-def upload_and_convert_image():
+def upload_and_convert_images():
     if request.method == 'POST':
-        if 'file' not in request.files:
+        if 'files' not in request.files:
             return redirect(request.url)
-        file = request.files['file']
-        if file.filename == '':
+        files = request.files.getlist('files')
+        if len(files) == 0:
             return redirect(request.url)
-        if file:
-            filename = os.path.join(webp_blueprint.config['UPLOAD_FOLDER'], file.filename)
-            file.save(filename)
-            
-            # Konvertálás WebP formátumba
-            output_filename = os.path.splitext(file.filename)[0] + '.webp'
-            output_path = os.path.join(webp_blueprint.config['OUTPUT_FOLDER'], output_filename)
-            convert_image_to_webp(filename, output_path)
 
-            return redirect(url_for('webp.download_file', filename=output_filename))
+        converted_files = []
+        for file in files:
+            if file:
+                filename = os.path.join(webp_blueprint.config['UPLOAD_FOLDER'], file.filename)
+                file.save(filename)
+                
+                # Konvertálás WebP formátumba
+                output_filename = os.path.splitext(file.filename)[0] + '.webp'
+                output_path = os.path.join(webp_blueprint.config['OUTPUT_FOLDER'], output_filename)
+                convert_image_to_webp(filename, output_path)
+                converted_files.append(output_path)
+
+        # ZIP fájl létrehozása a konvertált képekből
+        zip_filename = 'converted_images.zip'
+        zip_path = os.path.join(webp_blueprint.config['OUTPUT_FOLDER'], zip_filename)
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            for file in converted_files:
+                zipf.write(file, os.path.basename(file))
+
+        return redirect(url_for('webp.download_zip', zip_filename=zip_filename))
 
     return render_template('webpmaker.html')
 
-@webp_blueprint.route('/download/<filename>')
-def download_file(filename):
-    return send_from_directory(webp_blueprint.config['OUTPUT_FOLDER'], filename, as_attachment=True)
+@webp_blueprint.route('/download_zip/<zip_filename>')
+def download_zip(zip_filename):
+    zip_path = os.path.join(webp_blueprint.config['OUTPUT_FOLDER'], zip_filename)
+    return send_file(zip_path, as_attachment=True)

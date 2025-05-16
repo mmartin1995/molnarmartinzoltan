@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="hu">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keyword Maker</title>
+</head>
+
+<body>
+    <h1>Fájl feltöltése</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <label for="file">Válassza ki a fájlt:</label>
+        <input type="file" name="file" id="file" required>
+        <button type="submit">Feltöltés</button>
+    </form>
+
+    {% if rows %}
+    <h2>Feldolgozott adatok</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Kulcsszó</th>
+                <th>Ár</th>
+                <!-- További oszlopok -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ row[0] }}</td>
+                <td>{{ row[1] }}</td>
+                <!-- További oszlopok -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</body>
+
+</html>
+
+<p class="footer" style="background: #FFF; margin-top: 10px; padding: 10px 0;">
+    <a href="https://bookselfkiado.hu/" target="_blank" rel="noopener">
+      <img style="display: block; height: 75px; margin: 10px auto;" src="https://bookselfkiado.hu/content/images/logo_image.png" alt="" />
+    </a>
+  </p>
