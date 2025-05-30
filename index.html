@@ -12,31 +12,35 @@
   <meta charset="utf-8">
 </head>
 <body>
-  <nav>
-    <ul>
-      <li><a href="#" class="active">Home</a></li>
-      <li><a href="/bannermaker">BannerMaker</a></li>
-      <li><a href="/categorymaker">CategoryMaker</a></li>
-      <li><a href="/matrixmaker">MatrixMaker</a></li>
-      <li><a href="/webpmaker">WebPMaker</a></li>
-      <li><a href="/keywordmaker">KeywordMaker</a></li>
-    </ul>
+  <nav class="header">
+    <div class="headeritemwrapper">
+      <div class="headeritem active"><a href="#">Home</a></div>
+      <div class="headeritem"><a href="/bannermaker">BannerMaker</a></div>
+      <div class="headeritem"><a href="/categorymaker">CategoryMaker</a></div>
+      <div class="headeritem"><a href="/matrixmaker">MatrixMaker</a></div>
+      <div class="headeritem"><a href="/webpmaker">WebPMaker</a></div>
+      <div class="headeritem"><a href="/keywordmaker">KeywordMaker</a></div>
+    </div>
   </nav>
-      <section class="lightsection">
-        <img src="./contents/CV-photo.jpg" id="portrait">
+  <div class="container">
+      <section class="firstsection">
+        <img src="./contents/CV-photo.jpg">
         <h1> Molnár <strong> Martin </strong> Zoltán </h1>
       </section>
-
       <section class="info">
-        <h2>Info</h2>
-          <table>
-            <tr><td><a href="tel:+36303089350"><img src="./contents/phone.png" class="icon"></td></a><td class="right"><a href="tel:+36303089350">+36 30 30 89 350</a><td></tr>
-            <tr><td><a href="mailto:molnmartin.1995@gmail.com"><img src="./contents/email.png" class="icon"></a></td><td class="right"><a href="mailto:molnmartin.1995@gmail.com">molnmartin.1995@gmail.com</a><td></tr>
-            <tr><td><a href="https://github.com/mmartin1995"><img src="./contents/github.png" class="icon"></a></td><td class="right"><a href="https://github.com/mmartin1995">Github</a><td></tr>
-            <tr><td><a href="https://www.linkedin.com/in/molnar-martin-zoltan/"><img src="./contents/linkedin-icon.png" class="icon"></a></td><td class="right"><a href="https://www.linkedin.com/in/molnar-martin-zoltan/">linkedin</a></td></tr>
-          </table>
+        <h2 class="contactinfos">Contact</h2>
+          <div class="contactwrapper">
+            <div class="left"><a href="tel:+36303089350"><img src="./contents/phone.png" class="icon"></a></div>
+              <div class="right"><a href="tel:+36303089350">+36 30 30 89 350</a></div>
+            <div class="left"><a href="mailto:molnmartin.1995@gmail.com"><img src="./contents/email.png" class="icon"></a></div>
+              <div class="right"><a href="mailto:molnmartin.1995@gmail.com">molnmartin.1995@gmail.com</a></div>
+            <div class="left"><a href="https://github.com/mmartin1995"><img src="./contents/github.png" class="icon"></a></div>
+              <div class="right"><a href="https://github.com/mmartin1995">Github</a></div>
+            <div class="left"><a href="https://www.linkedin.com/in/molnar-martin-zoltan/"><img src="./contents/linkedin-icon.png" class="icon"></a></div>
+              <div class="right"><a href="https://www.linkedin.com/in/molnar-martin-zoltan/">linkedin</a></div>
+            </div>
       </section>
-  
+<!--
       <section class="lightsection">
         <h2>Skills</h2>
         <div>social media management</div>
@@ -107,9 +111,12 @@
       </div>
       
     </section>
+    
+-->
+  </div>
   <footer>
     <div>
-      &copy;2023 <strong><a href="https://molnarmartinzoltan.hu">Molnár Martin Zoltán</a></strong>
+      &copy;powered by <strong><a href="https://molnarmartinzoltan.hu">Molnár Martin Zoltán</a></strong>
     </div>
   </footer>
 </body>
