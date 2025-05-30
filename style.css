@@ -12,7 +12,7 @@ body {
   font-family: var(--PrimaryFont);
   background-color: var(--ColorWhite);
   color: var(--ColorBlack);
-  font-size: 3.5vw;
+  font-size: 18px;
   max-width: 100vw;
   min-height: 100vh;
   
@@ -31,8 +31,7 @@ a:hover {
 
 
 img {
-  max-width: 40vw;
-  margin: 1vh auto auto auto;
+  margin: auto;
   box-shadow: 0 0 10px #090b11;
 }
 
@@ -46,24 +45,29 @@ img {
   justify-content: space-between;
   font-size: 24px;
   background-color: var(--ColorGrey);
+  z-index: 1;
+  backface-visibility: hidden;
 }
 
 .header::after {
   content: "";
   display: block;
-  position: fixed;
-  left: 10%;
-  width: 80vw;
+  position: absolute;
+  left: 5%;
+  width: 90%;
   height: 15px;
-  background: black;
-  border-radius: 100px;
-  filter: blur(10px);
+  background: var(--ColorBlack);
+  border-radius: 50%;
+  filter: blur(5px);
+  bottom: -10px;
+  z-index: -1;
 }
 
 .headeritemwrapper {
   max-width: 90vw;
   margin: auto;
   text-align: center;
+  padding: 5px 0;
 }
 
 .headeritem {
@@ -117,34 +121,59 @@ img {
 
 
 
-/*container*/
+/*container - bodyn belül van, nem tartalmazza a footert és a headert*/
 
 .container{
   padding-top: 100px;
 }
 
-.contactwrapper {
-  width: 80vw;
+.firstsection {
+  margin: auto;
+  text-align: center;
+}
+
+.portrait {
+  max-width: 250px;
+}
+
+/* Contact info */
+
+.contactinfo {
+  width: 100%;
+  margin: 25px auto;
+}
+
+.contactinfoheader {
+  margin: auto;
+  text-align: center;
+}
+
+.contactinfowrapper {
+  width: 80%;
+  max-width: 350px;
   margin: auto;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  line-height: 45px;
+  line-height: 35px;
   vertical-align: middle;
+  gap: 5px;
 }
 
 .left {
   text-align: left;
-  flex: 1 1 10%;
+  flex: 0 1 10%;
+  padding-top: 5px;
 }
 
 .right {
   text-align: right;
-  flex: 1 1 90%;
+  flex: 0 1 85%;
+  padding-top: 5px;
 }
 
 .icon {
-  width: 45px;
+  width: 35px;
   filter: invert(0%) grayscale(100%);
   border-radius: 100px;
   transition: all .2s ease-in-out;
@@ -154,34 +183,17 @@ img {
   filter: invert(0%) grayscale(100%) opacity(70%);
 }
 
-/*desktop*/
+/*csak desktop*/
 
 @media (min-width: 700px) {
 
-  section {
-    width: 30vw;
-  }
-
-  body {
-    font-size: 2.5vw
-  }
-
-  h1 {
-    font-size: 2vw;
-  }
-
-  .blur {
-    display: inline-block
-  }
-
-  #portrait {
-    max-width: 35vw;
-    border: 1px solid black;
-    margin: 3vw auto auto auto;
-  }
 
 }
-*/
+/* csak mobil */
+@media (max-width: 700px) {
+
+
+}
 
 /*footer*/
 
@@ -189,16 +201,15 @@ footer {
   position: absolute;
   width: 100vw;
   background-color: var(--ColorGrey);
+  color: var(--ColorWhite);
   bottom: 0;
+  margin-top: 50px;
+  font-size: 10px;
+  text-align: center;
   }
   
 footer div {
-  margin: auto;
-  background-color: var(--ColorGrey);
-  color: var(--ColorWhite);
   padding: 5px 0;
-  margin-top: 50px;
-  font-size: 10px;
 }
 
 footer a {
