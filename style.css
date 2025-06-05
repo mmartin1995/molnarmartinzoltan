@@ -27,6 +27,8 @@ a {
 
 a:hover {
     color: var(--ColorGrey);
+    text-shadow: 0.1px 0.1px 1px var(--ColorGrey),
+                -0.1px -0.1px 1px var(--ColorGrey);
   }
 
 img {
@@ -60,6 +62,7 @@ section {
   font-size: 22px;
   background-color: var(--ColorWhite);
   box-shadow: 0px -10px 20px 0px var(--ColorGrey);
+  z-index: 1;
 }
 
 .headeritemwrapper {
@@ -129,15 +132,27 @@ section {
 
 .firstsection {
   text-align: center;
-  display: flex;
-  flex-direction: column;
   background-color: var(--ColorGrey);
   color: var(--ColorWhite);
   padding-top: 70px;
+  display: block;
+  justify-content: center;
 }
 
 .firstsection a {
   color: var(--ColorWhite);
+}
+
+.firstsection a:hover {
+  text-shadow: 0.1px 0.1px 1px var(--ColorWhite),
+              -0.1px -0.1px 1px var(--ColorWhite);
+}
+
+.firstsectiontop,
+.firstsectionbottom {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }
 
 .portrait {
@@ -146,10 +161,6 @@ section {
   border: 5px solid var(--ColorWhite);
   margin: 10px auto;
   vertical-align: middle;
-}
-
-.portrait img {
-
 }
 
 .firstsectionright {
@@ -220,6 +231,8 @@ section {
 .skillwrapper {
   flex: 0 1 80%;
   font-size: 14px;
+  justify-content: right;
+  display: flex;
 }
 
 .skill {
@@ -258,9 +271,6 @@ section {
 .workplace,
 .position {
   display: inline-block;
-}
-
-.position {
 }
 
 .jobrolewrapper {
@@ -318,7 +328,6 @@ footer {
   background-color: var(--ColorGrey);
   color: var(--ColorWhite);
   bottom: 0;
-  margin-top: 50px;
   font-size: 10px;
   text-align: center;
   }
@@ -329,6 +338,12 @@ footer div {
 
 footer a {
   color: var(--ColorWhite);
+}
+
+footer a:hover {
+  color: var(--ColorWhite);
+  text-shadow: 0.1px 0.1px 1px var(--ColorWhite),
+              -0.1px -0.1px 1px var(--ColorWhite);
 }
 
 strong {
