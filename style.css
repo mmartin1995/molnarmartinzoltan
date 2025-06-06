@@ -315,9 +315,13 @@ section {
 }
 
 .experiencedate,
-.workplace,
-.position {
+.workplace {
   display: inline-block;
+}
+
+.position {
+  display: block;
+  text-align: center;
 }
 
 .jobrolewrapper {
@@ -379,6 +383,7 @@ footer {
   bottom: 0;
   font-size: 10px;
   text-align: center;
+  margin-top: 10px;
   }
   
 footer div {
