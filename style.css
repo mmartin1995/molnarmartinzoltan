@@ -5,6 +5,7 @@
   --ColorBlack: #202020;
   --PrimaryFont: 'Rubik', sans-serif;
   --MainWidth: 1000px;
+  --PrimaryFontSize: 16px;
 }
 
 
@@ -14,7 +15,7 @@ body {
   font-family: var(--PrimaryFont);
   background-color: var(--ColorWhite);
   color: var(--ColorBlack);
-  font-size: 16px;
+  font-size: var(--PrimaryFontSize);
   height: 100%;
 }
 
@@ -50,6 +51,26 @@ section {
   padding-top: 10px;
   padding-bottom: 10px;
 }
+
+input, button{
+  font-family: var(--PrimaryFont);
+  color: var(--ColorGrey);
+  transition: all .3s ease-in-out;
+  border-radius: 5px;
+  font-size: var(--PrimaryFontSize);
+}
+
+input:hover, button:hover {
+  color: var(--ColorWhite);
+  background-color: var(--ColorGrey);
+}
+
+input[type="file"]:hover {
+  background-color: var(--ColorWhite);
+  color: var(--ColorGrey);
+}
+
+
 
 /*header*/
 
