@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Visszaszámláló – 2026.04.12. 06:00</title>
+  <style>
+    :root { --radius: 16px; }
+    html,body { height:100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Inter, "Noto Sans", Arial, sans-serif;
+      background: transparent;
+    }
+    .wrapper {
+      position: fixed; inset: 0;
+      display: flex; justify-content: center; align-items: center;
+      padding: 20px;
+    }
+    .panel {
+      border-radius: var(--radius);
+      padding: 16px 20px 20px;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      max-width: 960px;
+      width: min(92vw, 960px);
+    }
+    body[data-theme="dark"] .panel { background: rgba(0,0,0,0.5); color: #fff; }
+    body[data-theme="light"] .panel { background: rgba(255,255,255,0.5); color: #000; }
+
+    .topbar { display: flex; align-items: center; gap: 8px; }
+    .topbar .title { font-size: 16px; font-weight: 600; }
+    .topbar .spacer { flex: 1; }
+    button {
+      background: transparent; border: 1px solid transparent;
+      padding: 6px 10px; border-radius: 10px; cursor: pointer;
+      font: inherit;
+    }
+    .count {
+      margin: 8px 0 4px;
+      font-weight: 800;
+      font-size: clamp(28px, 6vw, 64px);
+      text-align: center;
+      letter-spacing: .5px;
+    }
+    .info { text-align: center; font-size: 13px; opacity: .9; }
+  </style>
+</head>
+<body data-theme="dark">
+  <div class="wrapper">
+    <div class="panel">
+      <div class="topbar">
+        <div class="title">Visszaszámláló</div>
+        <div class="spacer"></div>
+        <button id="modeBtn" title="Téma váltása">☀️ Világos mód</button>
+      </div>
+
+      <div id="count" class="count">-- nap -- ó -- p -- mp</div>
+      <div id="info" class="info">Célidő: {{ target_str }} ({{ target_tz }})</div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    // Szerver által számolt epoch-idők (ms)
+    const TARGET_MS = {{ target_epoch_ms }};
+    const SERVER_NOW_MS = {{ server_now_ms }};
+    // Kliens-szerver óraeltérés becslése -> pontosabb visszaszámláló
+    const clockSkew = SERVER_NOW_MS - Date.now();
+
+    const countEl = document.getElementById('count');
+    const modeBtn = document.getElementById('modeBtn');
+
+    // Téma betöltése + gomb felirata
+    const saved = localStorage.getItem('theme');
+    if (saved === 'light' || saved === 'dark') {
+      document.body.setAttribute('data-theme', saved);
+    }
+    updateModeBtn();
+    modeBtn.addEventListener('click', () => {
+      const cur = document.body.getAttribute('data-theme') || 'dark';
+      const next = cur === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      updateModeBtn();
+    });
+    function updateModeBtn(){
+      const theme = document.body.getAttribute('data-theme');
+      modeBtn.textContent = theme === 'dark' ? '☀️ Világos mód' : '🌙 Sötét mód';
+    }
+
+    function pad2(n){ return n.toString().padStart(2,'0'); }
+
+    function tick(){
+      const now = Date.now() + clockSkew;
+      let diff = Math.floor((TARGET_MS - now)/1000); // mp
+      if (diff <= 0) {
+        countEl.textContent = '⏱️ Célidő elérve!';
+        clearInterval(timer);
+        return;
+      }
+      const days = Math.floor(diff / 86400); diff %= 86400;
+      const hours = Math.floor(diff / 3600); diff %= 3600;
+      const mins = Math.floor(diff / 60);
+      const secs = diff % 60;
+      countEl.textContent = `${days} nap ${pad2(hours)} ó ${pad2(mins)} p ${pad2(secs)} mp`;
+    }
+
+    const timer = setInterval(tick, 200);
+    tick();
+
+    // Ha *alapból* a jobb-felső sarokban szeretnéd 0px távolsággal:
+    // document.querySelector('.wrapper').style.justifyContent = 'flex-end';
+    // document.querySelector('.wrapper').style.alignItems = 'flex-start';
+    // document.querySelector('.panel').style.margin = '0';
+  })();
+  </script>
+</body>
+</html>
