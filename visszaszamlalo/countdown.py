@@ -23,7 +23,7 @@ from pathlib import Path
 import urllib.request
 import ssl
 
-from PySide6.QtCore import Qt, QTimer, QPoint, Signal, QSize, QDateTime, QRect
+from PySide6.QtCore import Qt, QTimer, QPoint, Signal, QSize, QDateTime, QRect, QEvent
 from PySide6.QtGui import (
     QPainter, QColor, QFont, QGuiApplication, QCursor, QIcon, QPixmap, QPen, QAction
 )
@@ -1308,6 +1308,10 @@ class CountdownWindow(QWidget):
         self._resizing = False; self._resize_edge = None
 
         self._adapt_sort_controls()
+        self.installEventFilter(self)
+        for w in self.findChildren(QWidget):
+            w.installEventFilter(self)
+
 
     # ----- Segéd a gombokhoz -----
     def _prep_btn(self, btn: QPushButton, slot, flat: bool=True):
@@ -1539,6 +1543,43 @@ class CountdownWindow(QWidget):
     def keyPressEvent(self, e):
         if e.key() == Qt.Key.Key_Escape:
             self.close()
+
+    def eventFilter(self, obj, event):
+        et = event.type()
+        if et == QEvent.Type.MouseButtonPress and event.button() == Qt.MouseButton.LeftButton:
+            pos_global = event.globalPosition().toPoint()
+            pos = self.mapFromGlobal(pos_global)
+            edge = self._hit_test_resize_edge(pos)
+            if edge:
+                self._resizing = True
+                self._resize_edge = edge
+                self._start_geo = self.geometry()
+                self._start_pos = pos_global
+                return True  # ne menjen tovább a gyerekhez
+        elif et == QEvent.Type.MouseMove:
+            pos_global = event.globalPosition().toPoint()
+            if self._resizing and self._resize_edge:
+                self._do_resize(pos_global)
+                return True
+            # kurzor váltás – akkor is működjön, ha gyereken mozog
+            pos = self.mapFromGlobal(pos_global)
+            edge = self._hit_test_resize_edge(pos)
+            if edge in ("left","right"):
+                self.setCursor(Qt.CursorShape.SizeHorCursor)
+            elif edge in ("top","bottom"):
+                self.setCursor(Qt.CursorShape.SizeVerCursor)
+            elif edge in ("topleft","bottomright"):
+                self.setCursor(Qt.CursorShape.SizeFDiagCursor)
+            elif edge in ("topright","bottomleft"):
+                self.setCursor(Qt.CursorShape.SizeBDiagCursor)
+            else:
+                self.setCursor(Qt.CursorShape.ArrowCursor)
+        elif et == QEvent.Type.MouseButtonRelease and event.button() == Qt.MouseButton.LeftButton:
+            if self._resizing:
+                self._resizing = False
+                self._resize_edge = None
+                return True
+        return super().eventFilter(obj, event)
 
     def closeEvent(self, event):
         try:
