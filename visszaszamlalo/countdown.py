@@ -1309,9 +1309,13 @@ class CountdownWindow(QWidget):
 
         self._adapt_sort_controls()
         self.installEventFilter(self)
-        for w in self.findChildren(QWidget):
-            w.installEventFilter(self)
 
+        def _install_recursive_filters(widget, parent):
+            widget.installEventFilter(parent)
+            for child in widget.findChildren(QWidget):
+                _install_recursive_filters(child, parent)
+
+        _install_recursive_filters(self, self)
 
     # ----- Segéd a gombokhoz -----
     def _prep_btn(self, btn: QPushButton, slot, flat: bool=True):
