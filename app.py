@@ -5,7 +5,7 @@ from bannermaker.app import bannermaker_blueprint
 from categorymaker.app import category_blueprint
 from matrixmaker.app import matrix_blueprint
 from webpmaker.app import webp_blueprint
-from valasztasvisszaszamlalo.app import valasztas_blueprint
+from visszaszamlalo.app import valasztas_blueprint
 
 app = Flask(__name__, template_folder='.')
 
@@ -19,7 +19,7 @@ app.register_blueprint(bannermaker_blueprint, url_prefix='/bannermaker')
 app.register_blueprint(category_blueprint, url_prefix='/categorymaker')
 app.register_blueprint(matrix_blueprint, url_prefix='/matrixmaker')
 app.register_blueprint(webp_blueprint, url_prefix='/webpmaker')
-app.register_blueprint(valasztas_blueprint, url_prefix='/valasztasvisszaszamlalo')
+app.register_blueprint(valasztas_blueprint, url_prefix='/visszaszamlalo')
 
 # Központi oldal, amely navigációt biztosít a különböző programokhoz
 @app.route('/')
