@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <title>Felhasználókezelés</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body{font-family:system-ui;background:#0f1221;color:#e8ebff;margin:0;padding:24px}
+    h1{margin:0 0 16px}
+    table{width:100%;border-collapse:collapse;background:#171a2b}
+    th,td{padding:10px;border-bottom:1px solid #2a2f4a}
+    th{color:#a6acd3;text-align:left}
+    input,select{padding:8px;border-radius:10px;border:1px solid #2a2f4a;background:#1e2236;color:#e8ebff}
+    button{padding:8px 10px;border-radius:10px;border:1px solid #2a2f4a;background:#1e2236;color:#e8ebff;cursor:pointer}
+    button.primary{background:#6ea8fe;color:#07112b;border:none}
+    .row{display:flex;gap:8px;align-items:center}
+    .card{background:#171a2b;border:1px solid #2a2f4a;border-radius:14px;padding:12px;margin:12px 0}
+    .muted{color:#a6acd3}
+    a{color:#6ea8fe}
+  </style>
+</head>
+<body>
+  <h1>Felhasználók</h1>
+  <div class="card">
+    <div class="row">
+      <input id="newUserName" placeholder="felhasználónév">
+      <input id="newUserPass" type="password" placeholder="jelszó">
+      <select id="newUserRole">
+        <option value="user">user</option>
+        <option value="admin">admin</option>
+      </select>
+      <button class="primary" id="btnCreate">Létrehozás</button>
+    </div>
+    <div class="muted" style="margin-top:6px">Új felhasználó létrehozása</div>
+  </div>
+
+  <table id="tbl">
+    <thead>
+      <tr><th>ID</th><th>Felhasználónév</th><th>Szerep</th><th>Műveletek</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function api(path, method='GET', body=null){
+      const r = await fetch(`/visszaszamlalo/api/${path}`, {
+        method,
+        headers: body? {'Content-Type':'application/json'} : undefined,
+        body: body? JSON.stringify(body) : undefined
+      });
+      if(!r.ok){ const t=await r.text(); throw new Error(t||r.status); }
+      return r.json();
+    }
+    const tbody = document.querySelector('#tbl tbody');
+
+    async function load(){
+      const rows = await api('users');
+      tbody.innerHTML = '';
+      rows.forEach(u=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${u.id}</td>
+          <td><input value="${u.username}" data-id="${u.id}" class="inp-username"></td>
+          <td>
+            <select data-id="${u.id}" class="sel-role">
+              <option value="user"${u.role==='user'?' selected':''}>user</option>
+              <option value="admin"${u.role==='admin'?' selected':''}>admin</option>
+            </select>
+          </td>
+          <td>
+            <div class="row">
+              <input type="password" placeholder="új jelszó" data-id="${u.id}" class="inp-pass">
+              <button class="btn-save" data-id="${u.id}">Mentés</button>
+              <button class="btn-del" data-id="${u.id}">Törlés</button>
+            </div>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll('.btn-save').forEach(b=>{
+        b.addEventListener('click', async (e)=>{
+          const id = e.target.getAttribute('data-id');
+          const name = tbody.querySelector(\`.inp-username[data-id="\${id}"]\`).value.trim();
+          const role = tbody.querySelector(\`.sel-role[data-id="\${id}"]\`).value;
+          const pass = tbody.querySelector(\`.inp-pass[data-id="\${id}"]\`).value;
+          const patch = { username:name, role };
+          if (pass) patch.password = pass;
+          try{ await api(\`users/\${id}\`, 'PUT', patch); alert('Mentve'); load(); }
+          catch(err){ alert('Hiba: '+err.message); }
+        })
+      });
+
+      tbody.querySelectorAll('.btn-del').forEach(b=>{
+        b.addEventListener('click', async (e)=>{
+          const id = e.target.getAttribute('data-id');
+          if(!confirm('Biztos törlöd?')) return;
+          try{ await api(\`users/\${id}\`, 'DELETE'); load(); }
+          catch(err){ alert('Hiba: '+err.message); }
+        })
+      });
+    }
+
+    document.getElementById('btnCreate').addEventListener('click', async ()=>{
+      const username = document.getElementById('newUserName').value.trim();
+      const password = document.getElementById('newUserPass').value;
+      const role = document.getElementById('newUserRole').value;
+      if(!username || !password) return alert('Adj meg felhasználónevet és jelszót.');
+      try{
+        await api('users', 'POST', { username, password, role });
+        document.getElementById('newUserName').value='';
+        document.getElementById('newUserPass').value='';
+        document.getElementById('newUserRole').value='user';
+        load();
+      }catch(err){ alert('Hiba: '+err.message); }
+    });
+
+    load();
+  </script>
+</body>
+</html>
