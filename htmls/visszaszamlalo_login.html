@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <title>Bejelentkezés</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>body{font-family:system-ui;padding:2rem;max-width:420px;margin:auto}</style>
+</head>
+<body>
+  <h1>Bejelentkezés</h1>
+  {% if error %}<p style="color:#c00">{{ error }}</p>{% endif %}
+  <form method="post">
+    <label>Felhasználónév<br><input name="username" required></label><br><br>
+    <label>Jelszó<br><input name="password" type="password" required></label><br><br>
+    <button>Belépés</button>
+  </form>
+</body>
+</html>
