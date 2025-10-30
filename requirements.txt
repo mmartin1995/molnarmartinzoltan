@@ -1,27 +1,40 @@
-blinker==1.7.0
-click==8.1.7
-colorama==0.4.6
-et-xmlfile==1.1.0
+# --- Web app ---
 Flask==3.0.0
-itsdangerous==2.1.2
+Werkzeug==3.0.1
 Jinja2==3.1.2
-joblib==1.3.2
-MarkupSafe==2.1.3
-numpy==1.26.2
+click==8.1.7
+blinker==1.7.0
+itsdangerous==2.1.2
+
+# Auth + DB
+Flask-Login==0.6.3
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.25
+
+# HTTP kliens az ICS proxyhoz
+requests==2.32.3
+
+# WSGI szerver
+gunicorn==21.2.0
+
+# --- (Ha még kell az XLSX/pandas rész máshol az appban) ---
 openpyxl==3.1.2
 pandas==2.2.1
-Pillow==10.1.0
+numpy==1.26.2
 python-dateutil==2.9.0.post0
-pytz==2024.1
+tzdata==2024.1
+
+# --- (Csak ha tényleg kell MySQL-hez; SQLite-hoz NEM kell) ---
+# PyMySQL például:
+# pymysql==1.1.1
+
+# --- (Ha a scikit-learn rész kell az app többi moduljához) ---
 scikit-learn==1.3.2
 scipy==1.11.4
-six==1.16.0
+joblib==1.3.2
 threadpoolctl==3.2.0
-tzdata==2024.1
-Werkzeug==3.0.1
-gunicorn
-Flask
-Flask-Login
-Flask-SQLAlchemy
-SQLAlchemy
-pymysql
+six==1.16.0
+MarkupSafe==2.1.3
+Pillow==10.1.0
+et-xmlfile==1.1.0
+pytz==2024.1
