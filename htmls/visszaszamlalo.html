@@ -3,19 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Visszaszámláló – Projektek + Admin</title>
+  <title>Visszaszámláló – Projektek</title>
 
-  <!-- Szerver által beadott vezérlők -->
-  <script>
-    /* Ezeket a változókat a Flask sablon tölti ki: */
-    const READ_ONLY   = {{ 'true' if READ_ONLY else 'false' }};
-    const INITIAL_DATA = {{ INITIAL_DATA|safe }};
-    const API_BASE = "/visszaszamlalo/api";
-  </script>
+  <!-- Google Fonts (projektekhez választható betűtípusok) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Lato:wght@400;700&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;700&family=Space+Mono:wght@400;700&family=Anton&display=swap"
+    rel="stylesheet">
 
   <style>
     :root{
-      --bg: #0f1221; --panel: #171a2b; --panel-2:#1e2236;
+      --bg:#0f1221; --panel:#171a2b; --panel-2:#1e2236;
       --text:#e8ebff; --muted:#a6acd3; --acc:#6ea8fe;
       --good:#35d399; --warn:#ffcc66; --bad:#ff6b6b;
       --border:#2a2f4a; --shadow:0 10px 30px rgba(0,0,0,.3);
@@ -63,17 +62,28 @@
     .empty{opacity:.7;text-align:center;padding:36px;border:1px dashed var(--border);border-radius:16px}
     .archived{opacity:.55}
     .project-dot{width:10px;height:10px;border-radius:999px;display:inline-block;border:1px solid rgba(255,255,255,.3)}
-    [data-project-font="serif"]{font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif}
-    [data-project-font="mono"]{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
-    [data-project-font="display"]{font-family: "Trebuchet MS", Verdana, Geneva, Tahoma, sans-serif}
-    @media (max-width: 900px){ .app{grid-template-columns:1fr} aside{position:static;height:auto} }
-    /* READ ONLY módban az oldalsávot el tudjuk rejteni JS-ből; itt egy safety osztály: */
     .hidden{display:none !important}
+
+    /* Projekt betűtípusok */
+    [data-project-font="inter"]{font-family:"Inter",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    [data-project-font="lato"]{font-family:"Lato",system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    [data-project-font="merriweather"]{font-family:"Merriweather",ui-serif,Georgia,serif}
+    [data-project-font="playfair"]{font-family:"Playfair Display",ui-serif,Georgia,serif}
+    [data-project-font="space-mono"]{font-family:"Space Mono",ui-monospace,Menlo,Consolas,monospace}
+    [data-project-font="anton"]{font-family:"Anton","Impact",system-ui,sans-serif}
+    [data-project-font="serif"]{font-family:ui-serif,Georgia,Cambria,"Times New Roman",Times,serif}
+    [data-project-font="mono"]{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    [data-project-font="display"]{font-family:"Trebuchet MS",Verdana,Geneva,Tahoma,sans-serif}
+
+    @media (max-width: 900px){
+      .app{grid-template-columns:1fr}
+      aside{position:static;height:auto}
+    }
   </style>
 </head>
 <body>
   <div class="app">
-    <!-- Oldalsáv (Admin eszközök) -->
+    <!-- Oldalsáv (admin eszközök) -->
     <aside id="sidebar">
       <h1>⏳ Visszaszámláló</h1>
 
@@ -93,15 +103,26 @@
             <option value="desc">Lejárat csökkenő</option>
           </select>
         </div>
-        <div class="row">
-          <label class="pill">Projekt szűrő</label>
-          <select id="projectFilter"></select>
+
+        <!-- Többes projekt szűrő -->
+        <div class="stack" id="projectFilterWrap">
+          <div class="row" style="justify-content:space-between; gap:8px">
+            <span class="pill">Projekt szűrő</span>
+            <button class="btn secondary" type="button" id="btnToggleAllFilters">Összes be/kikapcsolása</button>
+          </div>
+          <div id="projectFilterBox" class="stack" style="max-height:180px; overflow:auto; padding:6px; border:1px solid var(--border); border-radius:12px; background:var(--panel-2)"></div>
+          <small class="helper">Ha <b>nincs semmi bejelölve</b>, akkor <b>minden</b> projekt látszik.</small>
         </div>
       </div>
 
       <h2>Naptárak (.ics)</h2>
       <div class="sidebar-card">
         <div class="stack">
+          <input id="icsUrl" type="url" placeholder="https://.../calendar.ics" class="input" />
+          <div class="row" style="margin-top:8px">
+            <button class="btn secondary" id="btnIcsFromUrl">Betöltés URL-ről</button>
+          </div>
+          <div class="divider"></div>
           <input id="icsInput" type="file" accept=".ics,text/calendar" multiple class="input" />
           <small class="helper">Dupla katt egy eseményre → előtöltött számláló létrehozás</small>
           <div id="calendarList" class="calendar-list"></div>
@@ -188,9 +209,15 @@
           <span>Betűtípus</span>
           <select id="projectFont" class="input">
             <option value="default">Alapértelmezett</option>
-            <option value="serif">Serif</option>
-            <option value="mono">Mono</option>
-            <option value="display">Display</option>
+            <option value="inter">Inter</option>
+            <option value="lato">Lato</option>
+            <option value="merriweather">Merriweather (serif)</option>
+            <option value="playfair">Playfair Display (serif)</option>
+            <option value="space-mono">Space Mono (monospace)</option>
+            <option value="anton">Anton (display)</option>
+            <option value="serif">Rendszer serif</option>
+            <option value="mono">Rendszer monospace</option>
+            <option value="display">Rendszer display</option>
           </select>
         </label>
       </div>
@@ -206,504 +233,16 @@
     <span class="tag"><span class="project-dot"></span><b class="name"></b></span>
   </template>
 
+  <!-- Backend által átadott minimális konfiguráció -->
   <script>
-    // ======= Állapot =======
-    const state = {
-      counters: [],   // {id,name,deadline,projectId,archived,createdAt,order}
-      projects: [],   // {id,name,color,font}
-      showArchived: false,
-      sortMode: 'manual',
-      projectFilter: 'all',
-      calendars: []   // {id,name,events:[{uid,summary,dtstart,dtend}]}
+    window.__VZ__ = {
+      READ_ONLY: {{ 'true' if READ_ONLY else 'false' }},
+      INITIAL_DATA: {{ INITIAL_DATA|safe }},
+      API_BASE: "/visszaszamlalo/api"
     };
-
-    // ======= Util =======
-    const uid = (p='id')=> p+"_"+Math.random().toString(36).slice(2,9);
-    const clamp = (n,min,max)=> Math.min(max,Math.max(min,n));
-    const fmtDateTime = (ms)=> new Date(ms).toLocaleString();
-    const parseLocalDateTime = (val)=> val? new Date(val).getTime(): null;
-    const tzLabel = document.getElementById('tzLabel');
-    function humanRemaining(ms){
-      const sign = ms<0 ? -1 : 1; ms = Math.abs(ms);
-      const s = Math.floor(ms/1000);
-      const d = Math.floor(s/86400);
-      const h = Math.floor((s%86400)/3600);
-      const m = Math.floor((s%3600)/60);
-      const sec = s%60;
-      const pad=(n)=> String(n).padStart(2,'0');
-      const core = `${d} nap ${pad(h)}:${pad(m)}:${pad(sec)}`;
-      return sign<0? `Lejárt ${core}`: core;
-    }
-    function byId(arr,id){ return arr.find(x=>x.id===id) }
-
-    function setSecondAlignedInterval(cb){
-      const delay = 1000 - (Date.now() % 1000);
-      setTimeout(()=>{ cb(); setInterval(cb,1000) }, delay);
-    }
-
-    // ======= API =======
-    async function apiGet(path){
-      const r = await fetch(`${API_BASE}/${path}`);
-      if(!r.ok) throw new Error(`GET ${path} ${r.status}`);
-      return r.json();
-    }
-    async function apiSend(method, path, body){
-      const r = await fetch(`${API_BASE}/${path}`, {
-        method,
-        headers: body? {'Content-Type':'application/json'} : undefined,
-        body: body? JSON.stringify(body): undefined
-      });
-      if(!r.ok) throw new Error(`${method} ${path} ${r.status}`);
-      return r.json();
-    }
-    const api = {
-      createProject: (p)=> apiSend('POST','project',p),
-      updateProject: (id,patch)=> apiSend('PUT',`project/${id}`,patch),
-      deleteProject: (id)=> apiSend('DELETE',`project/${id}`),
-      createCounter: (c)=> apiSend('POST','counter',c),
-      updateCounter: (id,patch)=> apiSend('PUT',`counter/${id}`,patch),
-      deleteCounter: (id)=> apiSend('DELETE',`counter/${id}`),
-      loadAll: async ()=>{
-        const [projects,counters] = await Promise.all([apiGet('projects'), apiGet('counters')]);
-        return {projects,counters};
-      }
-    };
-
-    // ======= Elemmut (DOM) =======
-    const listEl = document.getElementById('list');
-    const emptyEl = document.getElementById('emptyState');
-    const emptyHintAdmin = document.getElementById('emptyHintAdmin');
-    const activeCountEl = document.getElementById('activeCount');
-    const sortSel = document.getElementById('sortMode');
-    const showArchivedChk = document.getElementById('showArchived');
-    const projectFilterSel = document.getElementById('projectFilter');
-    const projectsPanel = document.getElementById('projectsPanel');
-    const sidebar = document.getElementById('sidebar');
-    const modeBadge = document.getElementById('modeBadge');
-
-    // ======= Inicializálás =======
-    (async function init(){
-      // Publikus nézetben rejtjük az oldalsávot (nincsenek beállítások)
-      if (READ_ONLY) {
-        sidebar.classList.add('hidden');
-        modeBadge.textContent = "Publikus nézet";
-      } else {
-        modeBadge.textContent = "Admin";
-      }
-
-      // Kezdeti adatok a szervertől (Jinja)
-      Object.assign(state, {
-        counters: (INITIAL_DATA && INITIAL_DATA.counters) || [],
-        projects: (INITIAL_DATA && INITIAL_DATA.projects) || []
-      });
-
-      // READ_ONLY módban tiltjuk a gombokat és a modalokat
-      if (READ_ONLY) {
-        document.getElementById('btnNewCounter').disabled = true;
-        document.getElementById('btnNewProject').disabled = true;
-        const ics = document.getElementById('icsInput'); if (ics) ics.disabled = true;
-        emptyHintAdmin.style.display = 'none';
-      }
-
-      renderAll();
-      setSecondAlignedInterval(tick);
-    })();
-
-    function tick(){
-      document.querySelectorAll('[data-deadline]').forEach(el=>{
-        const ms = Number(el.getAttribute('data-deadline')) - Date.now();
-        el.querySelector('.until').textContent = humanRemaining(ms);
-        const bar = el.querySelector('.bar');
-        if(bar){
-          const created = Number(el.getAttribute('data-created'))||Date.now();
-          const total = Number(el.getAttribute('data-deadline')) - created;
-          const passed = Date.now()-created;
-          const pct = total>0? clamp(Math.round(passed/total*100),0,100) : 100;
-          bar.style.width = pct+"%";
-        }
-      });
-    }
-
-    function renderAll(){
-      // beállítások komponensek (adminnál aktív)
-      sortSel.value = state.sortMode;
-      showArchivedChk.checked = state.showArchived;
-
-      // projekt szűrő feltöltése
-      projectFilterSel.innerHTML = '';
-      const optAll = document.createElement('option'); optAll.value='all'; optAll.textContent='(Összes projekt)'; projectFilterSel.appendChild(optAll);
-      state.projects.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; projectFilterSel.appendChild(o); });
-      projectFilterSel.value = state.projectFilter || 'all';
-
-      renderProjectsPanel();
-      renderList();
-    }
-
-    function visibleCounters(){
-      return state.counters.filter(c=> (state.showArchived || !c.archived) && (state.projectFilter==='all' || c.projectId===state.projectFilter) );
-    }
-
-    function sortCounters(arr){
-      const mode = state.sortMode;
-      if(mode==='manual') return arr.sort((a,b)=> (a.order??0)-(b.order??0));
-      if(mode==='project') return arr.sort((a,b)=> (getProjectName(a).localeCompare(getProjectName(b)) || (a.deadline-b.deadline)));
-      if(mode==='asc') return arr.sort((a,b)=> a.deadline-b.deadline);
-      if(mode==='desc') return arr.sort((a,b)=> b.deadline-a.deadline);
-      return arr;
-    }
-
-    function getProject(pId){ return state.projects.find(p=>p.id===pId) }
-    function getProjectName(c){ return (getProject(c.projectId)?.name)||'' }
-
-    function renderList(){
-      listEl.innerHTML='';
-      const items = sortCounters(visibleCounters().slice());
-
-      activeCountEl.textContent = state.counters.filter(c=>!c.archived).length;
-      emptyEl.style.display = items.length? 'none':'block';
-
-      items.forEach((c)=>{
-        const p = getProject(c.projectId) || {name:'(nincs projekt)', color:'#888', font:'default'};
-
-        const card = document.createElement('div');
-        card.className = 'card' + (c.archived? ' archived':'');
-        card.setAttribute('data-id', c.id);
-        card.setAttribute('data-deadline', c.deadline);
-        card.setAttribute('data-created', c.createdAt||Date.now());
-        card.draggable = (!READ_ONLY && state.sortMode==='manual');
-
-        const drag = document.createElement('div'); drag.className='drag'; drag.innerHTML='☰';
-
-        const center = document.createElement('div');
-        const right = document.createElement('div'); right.className='actions';
-
-        const title = document.createElement('div'); title.className='title'; title.textContent = c.name;
-        if (!READ_ONLY) {
-          title.style.cursor='pointer';
-          title.title='Kattintás: szerkesztés';
-          title.addEventListener('click', ()=> openCounterDialog(c));
-        }
-
-        const meta = document.createElement('div'); meta.className='meta';
-        const tag = document.getElementById('tplProjectChip').content.firstElementChild.cloneNode(true);
-        tag.querySelector('.name').textContent = p.name;
-        tag.querySelector('.project-dot').style.background = p.color;
-        tag.setAttribute('data-project-font', p.font||'default');
-
-        const when = document.createElement('span'); when.className='pill when'; when.textContent = new Date(c.deadline).toLocaleString();
-        const until = document.createElement('span'); until.className='pill until';
-        meta.append(tag, when, until);
-
-        const barWrap = document.createElement('div');
-        barWrap.style.height='4px'; barWrap.style.background='rgba(255,255,255,.08)';
-        barWrap.style.border='1px solid var(--border)'; barWrap.style.borderRadius='999px';
-        barWrap.style.overflow='hidden'; barWrap.title='Becsült előrehaladás';
-        const bar = document.createElement('div'); bar.className='bar'; bar.style.height='100%'; bar.style.width='0%'; bar.style.background=p.color; barWrap.append(bar);
-
-        center.append(title, meta, barWrap);
-
-        // Jobb oldali akciók (csak admin)
-        if (!READ_ONLY){
-          const btnEdit = document.createElement('button'); btnEdit.className='btn secondary'; btnEdit.textContent='Szerk.'; btnEdit.onclick=()=>openCounterDialog(c);
-          const btnArchive = document.createElement('button'); btnArchive.className='btn secondary'; btnArchive.textContent= c.archived? 'Visszaállít':'Archiválás';
-          btnArchive.onclick=async ()=>{
-            try {
-              await api.updateCounter(c.id, { archived: !c.archived });
-              c.archived = !c.archived;
-              renderAll();
-            } catch(e){ alert('Nem sikerült menteni: '+e.message); }
-          };
-          right.append(btnEdit, btnArchive);
-        }
-
-        card.append(drag, center, right);
-
-        if(!READ_ONLY && state.sortMode==='manual'){
-          card.addEventListener('dragstart', (e)=>{ e.dataTransfer.setData('text/plain', c.id); e.dataTransfer.effectAllowed='move'; });
-          card.addEventListener('dragover', (e)=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; });
-          card.addEventListener('drop', async (e)=>{
-            e.preventDefault();
-            const fromId = e.dataTransfer.getData('text/plain');
-            const toId = c.id;
-            await reorder(fromId,toId);
-          });
-        }
-
-        listEl.append(card);
-      });
-
-      tick();
-    }
-
-    async function reorder(fromId,toId){
-      if(fromId===toId) return;
-      const arr = sortCounters(visibleCounters().slice());
-      const fromIdx = arr.findIndex(x=>x.id===fromId);
-      const toIdx = arr.findIndex(x=>x.id===toId);
-      if(fromIdx<0||toIdx<0) return;
-      const [moved] = arr.splice(fromIdx,1);
-      arr.splice(toIdx,0,moved);
-      // új order kiosztás a látható elemeken
-      for (let i=0;i<arr.length;i++){
-        const real = state.counters.find(x=>x.id===arr[i].id);
-        if(real){
-          real.order = i;
-          if (!READ_ONLY){
-            try { await api.updateCounter(real.id, { order: real.order }); }
-            catch(e){ console.warn('order update hiba', e); }
-          }
-        }
-      }
-      renderList();
-    }
-
-    // ======= Projektek panel =======
-    function renderProjectsPanel(){
-      projectsPanel.innerHTML='';
-      if(!state.projects.length){
-        const empty = document.createElement('div'); empty.className='empty'; empty.textContent = READ_ONLY ? '—' : 'Nincs projekt. Hozz létre egyet!';
-        projectsPanel.append(empty); return;
-      }
-      state.projects.forEach(p=>{
-        const row = document.createElement('div'); row.className='row'; row.style.justifyContent='space-between';
-        const left = document.createElement('div'); left.className='row'; left.style.gap='8px';
-        const dot = document.createElement('span'); dot.className='project-dot'; dot.style.background=p.color;
-        const name = document.createElement('span'); name.textContent=p.name; name.setAttribute('data-project-font', p.font||'default');
-        left.append(dot,name);
-        row.append(left);
-
-        if (!READ_ONLY){
-          const right = document.createElement('div');
-          const b = document.createElement('button'); b.className='btn secondary'; b.textContent='Szerk.'; b.onclick=()=>openProjectDialog(p);
-          right.append(b); row.append(right);
-        }
-
-        projectsPanel.append(row);
-      });
-    }
-
-    // ======= Számláló létrehozás/szerkesztés =======
-    const counterDialog = document.getElementById('counterDialog');
-    const counterForm = document.getElementById('counterForm');
-    const counterId = document.getElementById('counterId');
-    const counterName = document.getElementById('counterName');
-    const counterWhen = document.getElementById('counterWhen');
-    const counterProject = document.getElementById('counterProject');
-    const btnDeleteCounter = document.getElementById('btnDeleteCounter');
-    const btnQuickNewProject = document.getElementById('btnQuickNewProject');
-
-    document.querySelectorAll('dialog [data-close]').forEach(b=> b.addEventListener('click', e=> e.target.closest('dialog').close() ));
-
-    function fillProjectSelect(sel){
-      sel.innerHTML='';
-      state.projects.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; sel.appendChild(o); });
-    }
-
-    function openCounterDialog(counter){
-      if (READ_ONLY) return;
-      document.getElementById('dlgTitle').textContent = counter? 'Számláló szerkesztése' : 'Új számláló';
-      fillProjectSelect(counterProject);
-      btnDeleteCounter.style.display = counter? 'inline-flex':'none';
-
-      if(counter){
-        counterId.value = counter.id;
-        counterName.value = counter.name;
-        counterWhen.value = new Date(counter.deadline).toISOString().slice(0,16);
-        counterProject.value = counter.projectId || (state.projects[0]?.id||'');
-      }else{
-        counterId.value = '';
-        counterName.value = '';
-        counterWhen.value = new Date(Date.now()+3600_000).toISOString().slice(0,16);
-        counterProject.value = state.projects[0]?.id || '';
-      }
-      counterDialog.showModal();
-    }
-
-    counterForm.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      if (READ_ONLY) return;
-      const id = counterId.value || uid('ctr');
-      const existing = byId(state.counters,id);
-      const data = {
-        id,
-        name: counterName.value.trim(),
-        deadline: parseLocalDateTime(counterWhen.value),
-        projectId: counterProject.value || null,
-        archived: existing? existing.archived : false,
-        createdAt: existing? existing.createdAt : Date.now(),
-        order: existing? existing.order : (state.counters.length ? Math.max(...state.counters.map(x=>x.order||0))+1 : 0)
-      };
-      try{
-        if(!existing){ await api.createCounter(data); state.counters.push(data); }
-        else{ await api.updateCounter(id, data); Object.assign(existing, data); }
-        counterDialog.close(); renderAll();
-      }catch(err){ alert('Mentési hiba: '+err.message); }
-    });
-
-    btnDeleteCounter.addEventListener('click', async ()=>{
-      if (READ_ONLY) return;
-      const id = counterId.value; if(!id) return;
-      try{
-        await api.deleteCounter(id);
-        const i = state.counters.findIndex(c=>c.id===id); if(i>=0) state.counters.splice(i,1);
-        counterDialog.close(); renderAll();
-      }catch(e){ alert('Törlési hiba: '+e.message); }
-    });
-
-    btnQuickNewProject.addEventListener('click', ()=> openProjectDialog());
-
-    // ======= Projekt létrehozás/szerkesztés =======
-    const projectDialog = document.getElementById('projectDialog');
-    const projectForm = document.getElementById('projectForm');
-    const projectIdEl = document.getElementById('projectId');
-    const projectNameEl = document.getElementById('projectName');
-    const projectColorEl = document.getElementById('projectColor');
-    const projectFontEl = document.getElementById('projectFont');
-    const btnDeleteProject = document.getElementById('btnDeleteProject');
-
-    function openProjectDialog(project){
-      if (READ_ONLY) return;
-      document.getElementById('projDlgTitle').textContent = project? 'Projekt szerkesztése' : 'Új projekt';
-      btnDeleteProject.style.display = project? 'inline-flex':'none';
-      if(project){
-        projectIdEl.value = project.id;
-        projectNameEl.value = project.name;
-        projectColorEl.value = toHex(project.color||'#6ea8fe');
-        projectFontEl.value = project.font||'default';
-      }else{
-        projectIdEl.value=''; projectNameEl.value=''; projectColorEl.value='#6ea8fe'; projectFontEl.value='default';
-      }
-      projectDialog.showModal();
-    }
-
-    function toHex(color){
-      if(/^#([0-9a-f]{3}){1,2}$/i.test(color)) return color;
-      const m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i); if(!m) return '#6ea8fe';
-      return '#'+[m[1],m[2],m[3]].map(n=> Number(n).toString(16).padStart(2,'0')).join('');
-    }
-
-    projectForm.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      if (READ_ONLY) return;
-      const id = projectIdEl.value || uid('prj');
-      const existing = byId(state.projects, id);
-      const data = { id, name: projectNameEl.value.trim(), color: projectColorEl.value, font: projectFontEl.value };
-      try{
-        if(!existing){ await api.createProject(data); state.projects.push(data); }
-        else{ await api.updateProject(id, data); Object.assign(existing, data); }
-        projectDialog.close();
-        if(counterDialog.open) fillProjectSelect(counterProject);
-        renderAll();
-      }catch(err){ alert('Projekt mentési hiba: '+err.message); }
-    });
-
-    btnDeleteProject.addEventListener('click', async ()=>{
-      if (READ_ONLY) return;
-      const id = projectIdEl.value; if(!id) return;
-      try{
-        await api.deleteProject(id);
-        // számlálók projekt hivatkozásainak törlése (helyi állapotban is)
-        state.counters.forEach(c=>{ if(c.projectId===id) c.projectId=null; });
-        const i = state.projects.findIndex(p=>p.id===id); if(i>=0) state.projects.splice(i,1);
-        projectDialog.close(); renderAll();
-      }catch(e){ alert('Projekt törlési hiba: '+e.message); }
-    });
-
-    // ======= Oldalsáv gombok, beállítások =======
-    document.getElementById('btnNewCounter').addEventListener('click', ()=>{
-      if (READ_ONLY) return;
-      if(!state.projects.length){ state.projects.push({id:uid('prj'), name:'Alap', color:'#6ea8fe', font:'default'}); }
-      openCounterDialog();
-    });
-
-    document.getElementById('btnNewProject').addEventListener('click', ()=> !READ_ONLY && openProjectDialog());
-
-    sortSel.addEventListener('change', ()=>{ state.sortMode = sortSel.value; renderAll(); });
-    showArchivedChk.addEventListener('change', ()=>{ state.showArchived = showArchivedChk.checked; renderAll(); });
-    projectFilterSel.addEventListener('change', ()=>{ state.projectFilter = projectFilterSel.value; renderAll(); });
-
-    // ======= ICS import és előtöltés (ADMIN ONLY) =======
-    const icsInput = document.getElementById('icsInput');
-    const calendarList = document.getElementById('calendarList');
-
-    if (icsInput){
-      icsInput.addEventListener('change', async (e)=>{
-        if (READ_ONLY) return; // publikuson nincs import
-        const files = Array.from(e.target.files||[]);
-        for(const file of files){
-          const text = await file.text();
-          const cal = parseICS(text);
-          cal.id = uid('cal'); cal.name = file.name;
-          state.calendars.push(cal);
-        }
-        renderCalendars();
-      });
-    }
-
-    function renderCalendars(){
-      calendarList.innerHTML='';
-      if(!state.calendars.length){
-        const x = document.createElement('div'); x.className='cal-item'; x.textContent='Még nincs betöltött naptár.'; calendarList.append(x); return;
-      }
-      state.calendars.forEach(cal=>{
-        const wrap = document.createElement('details');
-        wrap.className='cal-item';
-        const sum = document.createElement('summary'); sum.textContent = `${cal.name} — ${cal.events.length} esemény`;
-        wrap.append(sum);
-        cal.events.slice(0,500).forEach(ev=>{
-          const row = document.createElement('div'); row.className='event'; row.title= READ_ONLY ? '' : 'Dupla katt: előtöltés új számlálóhoz';
-          const left = document.createElement('div'); left.textContent = ev.summary || '(nincs cím)';
-          const right = document.createElement('div'); right.className='when'; right.textContent = new Date(ev.dtstart).toLocaleString();
-          row.append(left,right);
-          if(!READ_ONLY){
-            row.addEventListener('dblclick', ()=>{
-              if(!state.projects.length){ state.projects.push({id:uid('prj'), name:'Alap', color:'#6ea8fe', font:'default'}); }
-              openCounterDialog();
-              counterName.value = ev.summary || '';
-              counterWhen.value = new Date(ev.dtstart).toISOString().slice(0,16);
-            });
-          }
-          wrap.append(row);
-        });
-        calendarList.append(wrap);
-      });
-    }
-
-    function parseICS(ics){
-      const lines = ics.replace(/\r/g,'').split(/\n(?=[A-Z-]+[:;])/).map(l=> l.trim());
-      const events = [];
-      let inEvent = false; let buf = {};
-      for(let raw of lines){
-        if(raw.startsWith('BEGIN:VEVENT')){ inEvent=true; buf={}; continue; }
-        if(raw.startsWith('END:VEVENT')){ inEvent=false; if(buf.dtstart){ events.push(buf); } buf={}; continue; }
-        if(!inEvent) continue;
-        const line = raw;
-        if(line.startsWith('DTSTART')){
-          buf.dtstart = icsDateToMs(line);
-        }else if(line.startsWith('DTEND')){
-          buf.dtend = icsDateToMs(line);
-        }else if(line.startsWith('SUMMARY:')){
-          buf.summary = line.slice(8).trim();
-        }else if(line.startsWith('UID:')){
-          buf.uid = line.slice(4).trim();
-        }
-      }
-      return { events };
-    }
-
-    function icsDateToMs(line){
-      const mTz = line.match(/^DTSTART(?:;TZID=([^:;]+))?:(\d{8}T\d{6}Z?)/);
-      if(!mTz) return Date.now();
-      const [, tz, val] = mTz;
-      const year = +val.slice(0,4), mon=+val.slice(4,6)-1, day=+val.slice(6,8), hh=+val.slice(9,11), mm=+val.slice(11,13), ss=+val.slice(13,15);
-      if(val.endsWith('Z')){ return Date.UTC(year,mon,day,hh,mm,ss); }
-      return new Date(year,mon,day,hh,mm,ss).getTime();
-    }
-
-    // ======= Billentyűk (admin gyorsgomb) =======
-    window.addEventListener('keydown', (e)=>{
-      if(!READ_ONLY && e.key==='n' && (e.ctrlKey||e.metaKey)) { e.preventDefault(); document.getElementById('btnNewCounter').click(); }
-    });
   </script>
+  <!-- Külön JS fájlok -->
+  <script src="{{ url_for('visszaszamlalo.static', filename='js/vz-utils.js', v=1) }}" defer></script>
+  <script src="{{ url_for('visszaszamlalo.static', filename='js/vz-app.js', v=1) }}" defer></script>
 </body>
 </html>
