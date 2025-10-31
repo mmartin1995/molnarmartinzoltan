@@ -207,7 +207,7 @@ dialog {
     border: 1px solid var(--border);
     border-radius: 16px;
     min-width: 320px;
-    max-width: 600px;
+    max-width: 700px;
     box-shadow: var(--shadow);
 }
 
@@ -245,6 +245,10 @@ dialog {
 
 #calendarDialog .event .when {
     color: var(--muted);
+}
+
+#calendarDialog .row {
+    flex-wrap: nowrap;
 }
 
 .sidebar-card {
