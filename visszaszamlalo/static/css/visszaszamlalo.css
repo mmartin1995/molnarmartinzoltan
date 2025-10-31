@@ -1,0 +1,359 @@
+/* ====== visszaszamlalo.css ====== */
+:root {
+    --bg: #0f1221;
+    --panel: #171a2b;
+    --panel-2: #1e2236;
+    --text: #e8ebff;
+    --muted: #a6acd3;
+    --acc: #6ea8fe;
+    --good: #35d399;
+    --warn: #ffcc66;
+    --bad: #ff6b6b;
+    --border: #2a2f4a;
+    --shadow: 0 10px 30px rgba(0, 0, 0, .3);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    background: linear-gradient(180deg, var(--bg), #0a0d1a);
+    color: var(--text);
+    font: 15px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Inter, Ubuntu, Helvetica, Arial, sans-serif;
+}
+
+.app {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+}
+
+aside {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 18px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: auto;
+}
+
+main {
+    padding: 24px;
+}
+
+h1 {
+    font-size: 20px;
+    margin: 0 0 14px;
+}
+
+h2 {
+    font-size: 13px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 20px 0 8px;
+}
+
+.btn {
+    display: inline-flex;
+    gap: .5rem;
+    align-items: center;
+    background: var(--acc);
+    color: #07112b;
+    border: none;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+}
+
+.btn:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.btn.secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.btn.ghost {
+    background: transparent;
+    color: var(--muted);
+    box-shadow: none;
+}
+
+.row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.stack {
+    display: grid;
+    gap: 10px;
+}
+
+.input,
+select,
+textarea {
+    width: 100%;
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px;
+}
+
+.tag {
+    display: inline-flex;
+    gap: .4rem;
+    align-items: center;
+    padding: .15rem .5rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+}
+
+.list {
+    display: grid;
+    gap: 10px;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.toolbar .spacer {
+    flex: 1;
+}
+
+.card {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: var(--shadow);
+}
+
+.drag {
+    cursor: grab;
+    color: var(--muted);
+    user-select: none;
+}
+
+.title {
+    font-weight: 700;
+}
+
+.until {
+    font-variant-numeric: tabular-nums;
+}
+
+.meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.pill {
+    padding: .15rem .5rem;
+    border-radius: 999px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+}
+
+.actions {
+    display: flex;
+    gap: 6px;
+}
+
+.divider {
+    height: 1px;
+    background: var(--border);
+    margin: 12px 0;
+}
+
+dialog {
+    border: none;
+    border-radius: 16px;
+    padding: 0;
+    background: transparent;
+}
+
+.modal {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    min-width: 320px;
+    max-width: 520px;
+    box-shadow: var(--shadow);
+}
+
+.modal header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal .content {
+    padding: 14px 16px;
+}
+
+.modal footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+}
+
+/* Popupok: fehér szöveg */
+.modal,
+.modal header,
+.modal .content,
+.modal footer {
+    color: var(--text);
+}
+
+#calendarDialog .event {
+    color: var(--text);
+}
+
+#calendarDialog .event .when {
+    color: var(--muted);
+}
+
+.sidebar-card {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px;
+}
+
+.calendar-list {
+    display: grid;
+    gap: 6px;
+}
+
+.cal-item {
+    padding: 8px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+}
+
+.event {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 10px;
+}
+
+.event:hover {
+    background: rgba(110, 168, 254, .1);
+}
+
+.event .when {
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+small.helper {
+    color: var(--muted);
+}
+
+.empty {
+    opacity: .7;
+    text-align: center;
+    padding: 36px;
+    border: 1px dashed var(--border);
+    border-radius: 16px;
+}
+
+.archived {
+    opacity: .55;
+}
+
+.project-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    display: inline-block;
+    border: 1px solid rgba(255, 255, 255, .3);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Projekt betűtípusok (Google Fonts link az HTML-ben) */
+[data-project-font="inter"] {
+    font-family: "Inter", system-ui, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+[data-project-font="lato"] {
+    font-family: "Lato", system-ui, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+[data-project-font="merriweather"] {
+    font-family: "Merriweather", ui-serif, Georgia, serif;
+}
+
+[data-project-font="playfair"] {
+    font-family: "Playfair Display", ui-serif, Georgia, serif;
+}
+
+[data-project-font="space-mono"] {
+    font-family: "Space Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+
+[data-project-font="anton"] {
+    font-family: "Anton", "Impact", system-ui, sans-serif;
+}
+
+[data-project-font="serif"] {
+    font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+[data-project-font="mono"] {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+[data-project-font="display"] {
+    font-family: "Trebuchet MS", Verdana, Geneva, Tahoma, sans-serif;
+}
+
+@media (max-width: 900px) {
+    .app {
+        grid-template-columns: 1fr;
+    }
+
+    aside {
+        position: static;
+        height: auto;
+    }
+}
