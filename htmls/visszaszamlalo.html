@@ -75,12 +75,8 @@
     [data-project-font="mono"]{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
     [data-project-font="display"]{font-family:"Trebuchet MS",Verdana,Geneva,Tahoma,sans-serif}
 
-    /* Popupokban legyen fehér a szöveg alapból */
-    .modal,
-    .modal header,
-    .modal .content,
-    .modal footer { color: var(--text); }
-    /* ICS esemény sorok a popupban fehérek, a dátum halvány */
+    /* Popupok: fehér szöveg */
+    .modal, .modal header, .modal .content, .modal footer { color: var(--text); }
     #calendarDialog .event { color: var(--text); }
     #calendarDialog .event .when { color: var(--muted); }
 
@@ -254,6 +250,27 @@
     </div>
   </dialog>
 
+  <!-- Naptár átnevezése modal -->
+  <dialog id="calendarRenameDialog">
+    <form method="dialog" class="modal" id="calendarRenameForm">
+      <header>
+        <strong>Naptár átnevezése</strong>
+        <button class="btn ghost" type="button" data-close>Bezár</button>
+      </header>
+      <div class="content stack">
+        <input type="hidden" id="calRenameId" />
+        <label class="stack">
+          <span>Új név</span>
+          <input id="calRenameName" class="input" required placeholder="Pl. 'Munka naptár'" />
+        </label>
+      </div>
+      <footer>
+        <div style="flex:1"></div>
+        <button class="btn" id="btnCalRenameSave" type="submit">Mentés</button>
+      </footer>
+    </form>
+  </dialog>
+
   <template id="tplProjectChip">
     <span class="tag"><span class="project-dot"></span><b class="name"></b></span>
   </template>
@@ -268,6 +285,6 @@
   </script>
 
   <!-- MODUL: a fő app JS (ez importálja a vz-utils.js-t) -->
-  <script type="module" src="{{ url_for('visszaszamlalo.static', filename='js/vz-app.js', v=3) }}"></script>
+  <script type="module" src="{{ url_for('visszaszamlalo.static', filename='js/vz-app.js', v=5) }}"></script>
 </body>
 </html>

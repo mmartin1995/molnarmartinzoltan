@@ -1,35 +1,46 @@
-# visszaszamlalo/models.py
+from __future__ import annotations
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
+from sqlalchemy import Column, Integer, String, Boolean, Text
 
 db = SQLAlchemy()
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), default='user')  # 'admin' | 'user'
+# --- Felhasználó ---
+class User(UserMixin, db.Model):
+    __tablename__ = "user"
+    id = Column(Integer, primary_key=True)
+    username = Column(String(150), unique=True, nullable=False)
+    password_hash = Column(String(255), nullable=False)
+    role = Column(String(20), nullable=False, default="user")  # 'admin' | 'user'
 
-    # Flask-Login kompat
-    @property
-    def is_authenticated(self): return True
-    @property
-    def is_active(self): return True
-    @property
-    def is_anonymous(self): return False
-    def get_id(self): return str(self.id)
+    def get_id(self):
+        return str(self.id)
 
+# --- Projekt ---
 class Project(db.Model):
-    id = db.Column(db.String(40), primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
-    color = db.Column(db.String(16), default='#6ea8fe')
-    font = db.Column(db.String(24), default='default')
+    __tablename__ = "project"
+    id = Column(String(64), primary_key=True)     # kliens oldali uid
+    name = Column(String(255), nullable=False)
+    color = Column(String(32), nullable=False, default="#6ea8fe")
+    font  = Column(String(64), nullable=False, default="default")
 
+# --- Számláló ---
 class Counter(db.Model):
-    id = db.Column(db.String(40), primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    deadline = db.Column(db.BigInteger, nullable=False)  # epoch ms
-    project_id = db.Column(db.String(40), db.ForeignKey('project.id'))
-    project = db.relationship(Project, lazy='joined')
-    archived = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.BigInteger)
-    order = db.Column(db.Integer, default=0)
+    __tablename__ = "counter"
+    id = Column(String(64), primary_key=True)     # kliens oldali uid
+    name = Column(String(255), nullable=False)
+    deadline = Column(Integer, nullable=False)    # epoch ms
+    project_id = Column(String(64), nullable=True)
+    archived = Column(Boolean, nullable=False, default=False)
+    created_at = Column(Integer, nullable=False)  # epoch ms
+    order = Column(Integer, nullable=False, default=0)
+
+# --- ICS Naptár (tartós) ---
+class Calendar(db.Model):
+    __tablename__ = "calendar"
+    id = Column(String(64), primary_key=True)     # kliens oldali uid ('cal_...')
+    name = Column(String(255), nullable=False, default="Naptár")
+    source_type = Column(String(16), nullable=False, default="inline")  # 'url' | 'inline'
+    url = Column(Text, nullable=True)
+    ics_text = Column(Text, nullable=False)       # teljes ICS tartalom
+    created_at = Column(Integer, nullable=False)  # epoch ms

@@ -7,10 +7,7 @@ import {
 
 (() => {
   const { READ_ONLY, INITIAL_DATA, API_BASE } = window.__VZ__ || {};
-  if (!INITIAL_DATA) {
-    console.error('Hiányzó INITIAL_DATA');
-    return;
-  }
+  if (!INITIAL_DATA) { console.error('Hiányzó INITIAL_DATA'); return; }
 
   // ----- Állapot -----
   const state = {
@@ -19,7 +16,7 @@ import {
     showArchived: false,
     sortMode: 'manual',
     selectedProjects: new Set(), // üres = minden látszik
-    calendars: []
+    calendars: [] // {id,name,events:[]}
   };
 
   // ----- API -----
@@ -39,9 +36,16 @@ import {
     return r.json();
   }
   const api = {
+    // Calendars (tartós)
+    listCalendars: () => apiGet('calendars'),
+    createCalendar: (c) => apiSend('POST', 'calendar', c),
+    updateCalendar: (id, patch) => apiSend('PUT', `calendar/${id}`, patch),
+    deleteCalendar: (id) => apiSend('DELETE', `calendar/${id}`),
+    // Projects
     createProject: (p) => apiSend('POST', 'project', p),
     updateProject: (id, patch) => apiSend('PUT', `project/${id}`, patch),
     deleteProject: (id) => apiSend('DELETE', `project/${id}`),
+    // Counters
     createCounter: (c) => apiSend('POST', 'counter', c),
     updateCounter: (id, patch) => apiSend('PUT', `counter/${id}`, patch),
     deleteCounter: (id) => apiSend('DELETE', `counter/${id}`),
@@ -61,7 +65,7 @@ import {
   const projectFilterBox = document.getElementById('projectFilterBox');
   const btnToggleAllFilters = document.getElementById('btnToggleAllFilters');
 
-  // Dialog elemek
+  // Dialog elemek – Counter
   const counterDialog = document.getElementById('counterDialog');
   const counterForm = document.getElementById('counterForm');
   const counterId = document.getElementById('counterId');
@@ -71,6 +75,7 @@ import {
   const btnDeleteCounter = document.getElementById('btnDeleteCounter');
   const btnQuickNewProject = document.getElementById('btnQuickNewProject');
 
+  // Dialog elemek – Project
   const projectDialog = document.getElementById('projectDialog');
   const projectForm = document.getElementById('projectForm');
   const projectIdEl = document.getElementById('projectId');
@@ -85,13 +90,18 @@ import {
   const btnIcsFromUrl = document.getElementById('btnIcsFromUrl');
   const calendarList = document.getElementById('calendarList');
 
-  // ICS popup
+  // ICS popup + átnevezés
   const calendarDialog = document.getElementById('calendarDialog');
   const calDlgTitle = document.getElementById('calDlgTitle');
   const calEventsBox = document.getElementById('calEvents');
 
+  const calendarRenameDialog = document.getElementById('calendarRenameDialog');
+  const calendarRenameForm = document.getElementById('calendarRenameForm');
+  const calRenameId = document.getElementById('calRenameId');
+  const calRenameName = document.getElementById('calRenameName');
+
   // ----- Init -----
-  (function init() {
+  (async function init() {
     if (READ_ONLY) {
       sidebar.classList.add('hidden');
       modeBadge.textContent = 'Publikus nézet';
@@ -110,6 +120,23 @@ import {
       b.addEventListener('click', (e)=> e.target.closest('dialog').close());
     });
 
+    // Naptárak betöltése DB-ből (tartós)
+    try {
+      const rows = await api.listCalendars();
+      state.calendars = rows.map(r => {
+        const cal = { id: r.id, name: r.name, events: [] };
+        try {
+          const parsed = parseICS(r.icsText || '');
+          cal.events = parsed.events || [];
+        } catch (e) {
+          console.warn('ICS parse hiba:', r.name, e);
+        }
+        return cal;
+      });
+    } catch (e) {
+      console.warn('Naptárak betöltése sikertelen:', e);
+    }
+
     // Oldalsáv események
     document.getElementById('btnNewCounter').addEventListener('click', () => {
       if (READ_ONLY) return;
@@ -121,22 +148,29 @@ import {
     sortSel.addEventListener('change', () => { state.sortMode = sortSel.value; renderAll(); });
     showArchivedChk.addEventListener('change', () => { state.showArchived = showArchivedChk.checked; renderAll(); });
 
-    // ICS fájl
+    // ICS fájl import
     if (icsInput) {
       icsInput.addEventListener('change', async (e) => {
         if (READ_ONLY) return;
         const files = Array.from(e.target.files || []);
         for (const f of files) {
           const text = await f.text();
-          const cal = parseICS(text);
-          cal.id = uid('cal');
-          cal.name = f.name;
-          state.calendars.push(cal);
+          const parsed = parseICS(text);
+          const calId = uid('cal');
+          const name = f.name || 'calendar.ics';
+          try {
+            await api.createCalendar({ id: calId, name, sourceType: 'inline', url: null, icsText: text });
+            state.calendars.push({ id: calId, name, events: parsed.events || [] });
+          } catch (err) {
+            alert('Naptár mentési hiba: ' + err.message);
+          }
         }
         renderCalendars();
+        icsInput.value = '';
       });
     }
-    // ICS url
+
+    // ICS URL import
     if (btnIcsFromUrl) {
       btnIcsFromUrl.addEventListener('click', async () => {
         if (READ_ONLY) return;
@@ -148,11 +182,13 @@ import {
           const r = await fetch(`/visszaszamlalo/api/ics_proxy?url=${encodeURIComponent(url)}`, { credentials: 'same-origin' });
           if (!r.ok) throw new Error(await r.text());
           const text = await r.text();
-          const cal = parseICS(text);
-          cal.id = uid('cal');
-          cal.name = url.split('/').pop() || 'calendar.ics';
-          state.calendars.push(cal);
+          const parsed = parseICS(text);
+          const calId = uid('cal');
+          const name = url.split('/').pop() || 'calendar.ics';
+          await api.createCalendar({ id: calId, name, sourceType: 'url', url, icsText: text });
+          state.calendars.push({ id: calId, name, events: parsed.events || [] });
           renderCalendars();
+          icsUrlInput.value = '';
         } catch (e) {
           alert('Nem sikerült betölteni az ICS-t: ' + e.message);
         } finally {
@@ -170,7 +206,7 @@ import {
     projectForm.addEventListener('submit', onProjectSubmit);
     btnDeleteProject.addEventListener('click', onProjectDelete);
 
-    // Kezdeti render + másodperc-igazított frissítés
+    // Kezdeti render + másodperc igazítás
     renderAll();
     setSecondAlignedInterval(tick);
 
@@ -180,6 +216,11 @@ import {
         e.preventDefault(); document.getElementById('btnNewCounter').click();
       }
     });
+
+    // Naptár átnevezés form
+    if (calendarRenameForm) {
+      calendarRenameForm.addEventListener('submit', onCalendarRenameSubmit);
+    }
   })();
 
   // ----- Render -----
@@ -486,7 +527,7 @@ import {
     } catch (e) { alert('Projekt törlési hiba: ' + e.message); }
   }
 
-  // ----- ICS popup -----
+  // ----- ICS popup & lista -----
   function openCalendarDialog(cal){
     if (!calendarDialog) return;
     calDlgTitle.textContent = `${cal.name} — ${cal.events.length} esemény`;
@@ -527,7 +568,7 @@ import {
     if (!state.calendars.length) {
       const x = document.createElement('div');
       x.className = 'cal-item';
-      x.textContent = 'Még nincs betöltött naptár.';
+      x.textContent = 'Még nincs elmentett naptár.';
       calendarList.append(x);
       return;
     }
@@ -543,13 +584,43 @@ import {
       const left = document.createElement('div');
       left.textContent = `${cal.name} — ${cal.events.length} esemény`;
 
-      const btn = document.createElement('button');
-      btn.className = 'btn secondary';
-      btn.type = 'button';
-      btn.textContent = 'Megnyitás';
-      btn.addEventListener('click', () => openCalendarDialog(cal));
+      const right = document.createElement('div');
+      right.className = 'row';
 
-      top.append(left, btn);
+      const btnOpen = document.createElement('button');
+      btnOpen.className = 'btn secondary';
+      btnOpen.type = 'button';
+      btnOpen.textContent = 'Megnyitás';
+      btnOpen.addEventListener('click', () => openCalendarDialog(cal));
+      right.append(btnOpen);
+
+      if (!READ_ONLY) {
+        const btnRename = document.createElement('button');
+        btnRename.className = 'btn secondary';
+        btnRename.type = 'button';
+        btnRename.textContent = 'Átnevezés';
+        btnRename.addEventListener('click', () => openCalendarRename(cal));
+        right.append(btnRename);
+
+        const btnDel = document.createElement('button');
+        btnDel.className = 'btn secondary';
+        btnDel.type = 'button';
+        btnDel.textContent = 'Törlés';
+        btnDel.addEventListener('click', async () => {
+          if (!confirm('Biztos törlöd a naptárat?')) return;
+          try {
+            await api.deleteCalendar(cal.id);
+            const i = state.calendars.findIndex(x => x.id === cal.id);
+            if (i >= 0) state.calendars.splice(i, 1);
+            renderCalendars();
+          } catch (err) {
+            alert('Törlési hiba: ' + err.message);
+          }
+        });
+        right.append(btnDel);
+      }
+
+      top.append(left, right);
       row.append(top);
 
       const hint = document.createElement('small');
@@ -562,4 +633,30 @@ import {
       calendarList.append(row);
     });
   }
+
+  // ----- Calendar rename -----
+  function openCalendarRename(cal) {
+    if (!calendarRenameDialog) return;
+    calRenameId.value = cal.id;
+    calRenameName.value = cal.name || '';
+    calendarRenameDialog.showModal();
+  }
+
+  async function onCalendarRenameSubmit(e) {
+    e.preventDefault();
+    if (READ_ONLY) return;
+    const id = calRenameId.value;
+    const name = calRenameName.value.trim();
+    if (!name) { alert('Adj meg nevet.'); return; }
+    try {
+      await api.updateCalendar(id, { name });
+      const cal = state.calendars.find(x => x.id === id);
+      if (cal) cal.name = name;
+      calendarRenameDialog.close();
+      renderCalendars();
+    } catch (err) {
+      alert('Mentési hiba: ' + err.message);
+    }
+  }
+
 })();

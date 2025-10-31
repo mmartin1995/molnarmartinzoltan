@@ -8,28 +8,19 @@ from typing import Any, Dict
 
 import requests
 from flask import (
-    Blueprint,
-    abort,
-    jsonify,
-    redirect,
-    render_template,
-    request,
-    url_for,
+    Blueprint, abort, jsonify, redirect, render_template,
+    request, url_for,
 )
 from flask_login import (
-    LoginManager,
-    current_user,
-    login_required,
-    login_user,
-    logout_user,
+    LoginManager, current_user, login_required, login_user, logout_user,
 )
 from sqlalchemy import func
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from .models import db, User, Project, Counter
+from .models import db, User, Project, Counter, Calendar
 
 # ----------------------------------------------------------------------
-# Blueprint létrehozása (külön template/static mappákkal)
+# Blueprint létrehozása
 # ----------------------------------------------------------------------
 visszaszamlalo_blueprint = Blueprint(
     "visszaszamlalo",
@@ -39,10 +30,9 @@ visszaszamlalo_blueprint = Blueprint(
 )
 
 # ----------------------------------------------------------------------
-# Auth/DB init – ezt a gyökér app.py hívja meg: init_auth(app)
+# Auth/DB init – hívd meg a gyökér app.py-ból: init_auth(app)
 # ----------------------------------------------------------------------
 def init_auth(app):
-    """SQLAlchemy + Flask-Login inicializálása, táblák létrehozása."""
     db.init_app(app)
     login_manager = LoginManager(app)
     login_manager.login_view = "visszaszamlalo.login"
@@ -54,47 +44,42 @@ def init_auth(app):
         except Exception:
             return None
 
-    # Táblák létrehozása (első induláskor)
     with app.app_context():
         db.create_all()
 
-
 # ----------------------------------------------------------------------
-# Segédfüggvények / szerializálók
+# Segédek
 # ----------------------------------------------------------------------
 def is_admin() -> bool:
     return current_user.is_authenticated and getattr(current_user, "role", "") == "admin"
-
 
 def admin_guard():
     if not is_admin():
         abort(403)
 
-
 def serialize_project(p: Project) -> Dict[str, Any]:
     return {"id": p.id, "name": p.name, "color": p.color, "font": p.font}
 
-
 def serialize_counter(c: Counter) -> Dict[str, Any]:
     return {
-        "id": c.id,
-        "name": c.name,
-        "deadline": c.deadline,
-        "projectId": c.project_id,
-        "archived": c.archived,
-        "createdAt": c.created_at,
-        "order": c.order,
+        "id": c.id, "name": c.name, "deadline": c.deadline,
+        "projectId": c.project_id, "archived": c.archived,
+        "createdAt": c.created_at, "order": c.order,
     }
 
+def serialize_calendar(cal: Calendar) -> Dict[str, Any]:
+    return {
+        "id": cal.id, "name": cal.name, "sourceType": cal.source_type,
+        "url": cal.url, "icsText": cal.ics_text, "createdAt": cal.created_at,
+    }
 
 # ----------------------------------------------------------------------
-# Első admin setup – csak akkor elérhető, ha még nincs felhasználó
+# Első admin setup
 # ----------------------------------------------------------------------
 @visszaszamlalo_blueprint.route("/setup", methods=["GET", "POST"])
 def setup():
     user_count = db.session.query(func.count(User.id)).scalar() or 0
     if user_count > 0:
-        # Ha már van user, irány a login
         return redirect(url_for("visszaszamlalo.login"))
 
     error = None
@@ -112,18 +97,15 @@ def setup():
             u = User(username=username, password_hash=generate_password_hash(password), role="admin")
             db.session.add(u)
             db.session.commit()
-            # Első admin kész → login oldal
             return redirect(url_for("visszaszamlalo.login"))
 
     return render_template("visszaszamlalo_setup.html", error=error)
 
-
 # ----------------------------------------------------------------------
-# Bejelentkezés / kijelentkezés
+# Login/Logout
 # ----------------------------------------------------------------------
 @visszaszamlalo_blueprint.route("/login", methods=["GET", "POST"])
 def login():
-    # Ha még nincs user, kényszerítsük a /setup-ra
     user_count = db.session.query(func.count(User.id)).scalar() or 0
     if user_count == 0:
         return redirect(url_for("visszaszamlalo.setup"))
@@ -135,7 +117,6 @@ def login():
         u = User.query.filter_by(username=username).first()
         if u and check_password_hash(u.password_hash, password):
             login_user(u)
-            # Admin → admin felület, user → megtekintő
             if u.role == "admin":
                 return redirect(url_for("visszaszamlalo.admin_index"))
             return redirect(url_for("visszaszamlalo.index"))
@@ -143,17 +124,14 @@ def login():
 
     return render_template("visszaszamlalo_login.html", error=error)
 
-
 @visszaszamlalo_blueprint.route("/logout")
 @login_required
 def logout():
     logout_user()
     return redirect(url_for("visszaszamlalo.login"))
 
-
 # ----------------------------------------------------------------------
-# Megtekintő (mindkét szerep), de login kötelező
-# READ_ONLY = True, az admin UI el van rejtve
+# Megtekintő (login kötelező) – READ_ONLY
 # ----------------------------------------------------------------------
 @visszaszamlalo_blueprint.route("/")
 @login_required
@@ -169,10 +147,8 @@ def index():
         target_str="Megtekintés",
     )
 
-
 # ----------------------------------------------------------------------
-# Admin felület – csak adminnak
-# READ_ONLY = False, szerkesztés engedélyezve
+# Admin felület – READ_WRITE
 # ----------------------------------------------------------------------
 @visszaszamlalo_blueprint.route("/admin")
 @login_required
@@ -189,9 +165,8 @@ def admin_index():
         target_str="Admin",
     )
 
-
 # ----------------------------------------------------------------------
-# Opcionális: külön felhasználókezelő admin oldal (HTML)
+# Opcionális: felhasználókezelő oldal
 # ----------------------------------------------------------------------
 @visszaszamlalo_blueprint.route("/admin/users")
 @login_required
@@ -199,13 +174,11 @@ def admin_users_page():
     admin_guard()
     return render_template("visszaszamlalo_users.html")
 
-
 # ----------------------------------------------------------------------
-# ICS URL-proxy – csak adminnak (CORS-kímélő)
+# ICS URL-proxy – csak admin
 # ----------------------------------------------------------------------
 _HTTP_URL_RE = re.compile(r"^https?://", re.I)
 _MAX_ICS_BYTES = 3_000_000  # 3 MB
-
 
 @visszaszamlalo_blueprint.route("/api/ics_proxy")
 @login_required
@@ -214,7 +187,6 @@ def api_ics_proxy():
     url = (request.args.get("url") or "").strip()
     if not url or not _HTTP_URL_RE.match(url):
         return ("Invalid URL", 400)
-
     try:
         r = requests.get(
             url,
@@ -223,24 +195,20 @@ def api_ics_proxy():
             stream=True,
         )
         r.raise_for_status()
-
         size = 0
-        chunks = []
+        parts = []
         for chunk in r.iter_content(8192):
             size += len(chunk)
             if size > _MAX_ICS_BYTES:
                 return ("ICS túl nagy", 413)
-            chunks.append(chunk)
-        data = b"".join(chunks)
-
-        # Sok szolgáltató rossz CT-t ad, nem fail-eljünk emiatt
+            parts.append(chunk)
+        data = b"".join(parts)
         return (data, 200, {"Content-Type": "text/calendar; charset=utf-8"})
     except requests.RequestException as e:
         return (f"Hiba az ICS letöltés közben: {e}", 502)
 
-
 # ----------------------------------------------------------------------
-# API-k – minden API login-köteles; az író műveletek csak adminnak
+# API-k – login kötelező, írás csak adminnak
 # ----------------------------------------------------------------------
 # Projektek
 @visszaszamlalo_blueprint.route("/api/projects")
@@ -248,7 +216,6 @@ def api_ics_proxy():
 def api_projects():
     rows = Project.query.order_by(Project.name).all()
     return jsonify([serialize_project(p) for p in rows])
-
 
 @visszaszamlalo_blueprint.route("/api/project", methods=["POST"])
 @login_required
@@ -270,19 +237,16 @@ def api_project_create():
     db.session.commit()
     return jsonify({"ok": True})
 
-
 @visszaszamlalo_blueprint.route("/api/project/<pid>", methods=["PUT", "DELETE"])
 @login_required
 def api_project_update(pid: str):
     admin_guard()
     p = Project.query.get_or_404(pid)
     if request.method == "DELETE":
-        # projekt törlésekor a számlálók project_id-je NULL-ra áll
         Counter.query.filter_by(project_id=pid).update({"project_id": None})
         db.session.delete(p)
         db.session.commit()
         return jsonify({"ok": True})
-
     patch = request.get_json(force=True)
     for k in ("name", "color", "font"):
         if k in patch:
@@ -290,14 +254,12 @@ def api_project_update(pid: str):
     db.session.commit()
     return jsonify({"ok": True})
 
-
 # Számlálók
 @visszaszamlalo_blueprint.route("/api/counters")
 @login_required
 def api_counters():
     rows = Counter.query.all()
     return jsonify([serialize_counter(c) for c in rows])
-
 
 @visszaszamlalo_blueprint.route("/api/counter", methods=["POST"])
 @login_required
@@ -309,7 +271,6 @@ def api_counter_create():
         return jsonify({"ok": False, "error": "counter.id kötelező"}), 400
     if Counter.query.get(cid):
         return jsonify({"ok": False, "error": "Már létezik ilyen számláló"}), 409
-
     c = Counter(
         id=cid,
         name=b.get("name") or "Névtelen",
@@ -323,7 +284,6 @@ def api_counter_create():
     db.session.commit()
     return jsonify({"ok": True})
 
-
 @visszaszamlalo_blueprint.route("/api/counter/<cid>", methods=["PUT", "DELETE"])
 @login_required
 def api_counter_update(cid: str):
@@ -333,26 +293,72 @@ def api_counter_update(cid: str):
         db.session.delete(c)
         db.session.commit()
         return jsonify({"ok": True})
-
     patch = request.get_json(force=True)
-    if "name" in patch:
-        c.name = patch["name"] or c.name
-    if "deadline" in patch:
-        c.deadline = int(patch["deadline"])
-    if "projectId" in patch:
-        c.project_id = patch["projectId"]
-    if "archived" in patch:
-        c.archived = bool(patch["archived"])
-    if "createdAt" in patch:
-        c.created_at = int(patch["createdAt"])
-    if "order" in patch:
-        c.order = int(patch["order"])
+    if "name" in patch:       c.name = patch["name"] or c.name
+    if "deadline" in patch:   c.deadline = int(patch["deadline"])
+    if "projectId" in patch:  c.project_id = patch["projectId"]
+    if "archived" in patch:   c.archived = bool(patch["archived"])
+    if "createdAt" in patch:  c.created_at = int(patch["createdAt"])
+    if "order" in patch:      c.order = int(patch["order"])
     db.session.commit()
     return jsonify({"ok": True})
 
+# Naptárak (ICS) – tartós
+@visszaszamlalo_blueprint.route("/api/calendars", methods=["GET"])
+@login_required
+def api_calendars_list():
+    rows = Calendar.query.order_by(Calendar.name).all()
+    return jsonify([serialize_calendar(c) for c in rows])
+
+@visszaszamlalo_blueprint.route("/api/calendar", methods=["POST"])
+@login_required
+def api_calendar_create():
+    admin_guard()
+    b = request.get_json(force=True)
+    cid = (b.get("id") or "").strip()
+    if not cid:
+        return jsonify({"ok": False, "error": "calendar.id kötelező"}), 400
+    if Calendar.query.get(cid):
+        return jsonify({"ok": False, "error": "Már van ilyen calendar.id"}), 409
+    name = (b.get("name") or "").strip() or "Naptár"
+    source_type = (b.get("sourceType") or "inline").lower()
+    if source_type not in ("inline", "url"):
+        source_type = "inline"
+    url = (b.get("url") or "").strip() or None
+    ics_text = b.get("icsText") or ""
+    if not ics_text:
+        return jsonify({"ok": False, "error": "icsText kötelező"}), 400
+    now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
+    cal = Calendar(id=cid, name=name, source_type=source_type, url=url, ics_text=ics_text, created_at=now_ms)
+    db.session.add(cal)
+    db.session.commit()
+    return jsonify({"ok": True})
+
+@visszaszamlalo_blueprint.route("/api/calendar/<cid>", methods=["PUT", "DELETE"])
+@login_required
+def api_calendar_update(cid: str):
+    admin_guard()
+    cal = Calendar.query.get_or_404(cid)
+    if request.method == "DELETE":
+        db.session.delete(cal)
+        db.session.commit()
+        return jsonify({"ok": True})
+    b = request.get_json(force=True)
+    if "name" in b:
+        name = (b["name"] or "").strip()
+        if not name:
+            return jsonify({"ok": False, "error": "név nem lehet üres"}), 400
+        cal.name = name
+    if "icsText" in b and b["icsText"]:
+        cal.ics_text = b["icsText"]
+    if "url" in b:
+        cal.url = (b["url"] or "").strip() or None
+        cal.source_type = "url" if cal.url else "inline"
+    db.session.commit()
+    return jsonify({"ok": True})
 
 # ----------------------------------------------------------------------
-# Admin – felhasználókezelés API (ha használod az admin/users oldalt)
+# Admin – felhasználókezelés API
 # ----------------------------------------------------------------------
 @visszaszamlalo_blueprint.route("/api/users", methods=["GET"])
 @login_required
@@ -360,7 +366,6 @@ def api_users_list():
     admin_guard()
     rows = User.query.order_by(User.id).all()
     return jsonify([{"id": u.id, "username": u.username, "role": u.role} for u in rows])
-
 
 @visszaszamlalo_blueprint.route("/api/users", methods=["POST"])
 @login_required
@@ -379,20 +384,17 @@ def api_users_create():
     db.session.commit()
     return jsonify({"ok": True, "id": u.id})
 
-
 @visszaszamlalo_blueprint.route("/api/users/<int:uid>", methods=["PUT", "DELETE"])
 @login_required
 def api_users_update(uid: int):
     admin_guard()
     u = User.query.get_or_404(uid)
-
     if request.method == "DELETE":
         if u.role == "admin" and User.query.filter_by(role="admin").count() <= 1:
             return jsonify({"ok": False, "error": "Az utolsó admin nem törölhető"}), 400
         db.session.delete(u)
         db.session.commit()
         return jsonify({"ok": True})
-
     b = request.get_json(force=True)
     if "username" in b:
         name = (b["username"] or "").strip()
