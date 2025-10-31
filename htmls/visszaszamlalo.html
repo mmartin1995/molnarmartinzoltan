@@ -11,9 +11,10 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Lato:wght@400;700&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;700&family=Space+Mono:wght@400;700&family=Anton&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet"
-      href="{{ url_for('visszaszamlalo.static', filename='css/visszaszamlalo.css', v=1) }}">
 
+  <!-- Külső stíluslap -->
+  <link rel="stylesheet"
+        href="{{ url_for('visszaszamlalo.static', filename='css/visszaszamlalo.css', v=1) }}">
 </head>
 <body>
   <div class="app">
@@ -23,7 +24,9 @@
 
       <div class="sidebar-card stack">
         <button class="btn" id="btnNewCounter">+ Új számláló</button>
-        <label class="pill" style="cursor:pointer"><input id="showArchived" type="checkbox" /> Archiváltak megjelenítése</label>
+        <label class="pill" style="cursor:pointer">
+          <input id="showArchived" type="checkbox" /> Archiváltak megjelenítése
+        </label>
       </div>
 
       <h2>Stílus</h2>
@@ -42,9 +45,12 @@
         <div class="stack" id="projectFilterWrap">
           <div class="row" style="justify-content:space-between; gap:8px">
             <span class="pill">Projekt szűrő</span>
-            <button class="btn secondary" type="button" id="btnToggleAllFilters">Összes be/kikapcsolása</button>
+            <button class="btn secondary" type="button" id="btnToggleAllFilters">
+              Összes be/kikapcsolása
+            </button>
           </div>
-          <div id="projectFilterBox" class="stack" style="max-height:180px; overflow:auto; padding:6px; border:1px solid var(--border); border-radius:12px; background:var(--panel-2)"></div>
+          <div id="projectFilterBox" class="stack"
+               style="max-height:180px; overflow:auto; padding:6px; border:1px solid var(--border); border-radius:12px; background:var(--panel-2)"></div>
           <small class="helper">Ha <b>nincs semmi bejelölve</b>, akkor <b>minden</b> projekt látszik.</small>
         </div>
       </div>
@@ -214,6 +220,6 @@
   </script>
 
   <!-- MODUL: a fő app JS (ez importálja a vz-utils.js-t) -->
-  <script type="module" src="{{ url_for('visszaszamlalo.static', filename='js/vz-app.js', v=5) }}"></script>
+  <script type="module" src="{{ url_for('visszaszamlalo.static', filename='js/vz-app.js', v=6) }}"></script>
 </body>
 </html>
