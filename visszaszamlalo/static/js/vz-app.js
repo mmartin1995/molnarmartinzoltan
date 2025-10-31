@@ -1,4 +1,4 @@
-// fő alkalmazás JS – külön fájl
+// fő alkalmazás JS – modul
 import {
   uid, clamp, fmtDateTime, parseLocalDateTime,
   setSecondAlignedInterval, humanRemaining, toHex,
@@ -24,7 +24,7 @@ import {
 
   // ----- API -----
   async function apiGet(path) {
-    const r = await fetch(`${API_BASE}/${path}`);
+    const r = await fetch(`${API_BASE}/${path}`, { credentials: 'same-origin' });
     if (!r.ok) throw new Error(`GET ${path} ${r.status}`);
     return r.json();
   }
@@ -32,7 +32,8 @@ import {
     const r = await fetch(`${API_BASE}/${path}`, {
       method,
       headers: body ? { 'Content-Type': 'application/json' } : undefined,
-      body: body ? JSON.stringify(body) : undefined
+      body: body ? JSON.stringify(body) : undefined,
+      credentials: 'same-origin'
     });
     if (!r.ok) throw new Error(`${method} ${path} ${r.status}`);
     return r.json();
@@ -84,6 +85,11 @@ import {
   const btnIcsFromUrl = document.getElementById('btnIcsFromUrl');
   const calendarList = document.getElementById('calendarList');
 
+  // ICS popup
+  const calendarDialog = document.getElementById('calendarDialog');
+  const calDlgTitle = document.getElementById('calDlgTitle');
+  const calEventsBox = document.getElementById('calEvents');
+
   // ----- Init -----
   (function init() {
     if (READ_ONLY) {
@@ -94,14 +100,15 @@ import {
       if (icsInput) icsInput.disabled = true;
       if (icsUrlInput) icsUrlInput.disabled = true;
       if (btnIcsFromUrl) btnIcsFromUrl.disabled = true;
-      emptyHintAdmin.style.display = 'none';
+      if (emptyHintAdmin) emptyHintAdmin.style.display = 'none';
     } else {
       modeBadge.textContent = 'Admin';
     }
 
-    // Általános gombok
-    const closeBtns = document.querySelectorAll('dialog [data-close]');
-    closeBtns.forEach(b => b.addEventListener('click', (e) => e.target.closest('dialog').close()));
+    // Bezár gombok (minden dialogban működik)
+    document.querySelectorAll('dialog [data-close]').forEach(b=>{
+      b.addEventListener('click', (e)=> e.target.closest('dialog').close());
+    });
 
     // Oldalsáv események
     document.getElementById('btnNewCounter').addEventListener('click', () => {
@@ -138,7 +145,7 @@ import {
         try {
           btnIcsFromUrl.disabled = true;
           btnIcsFromUrl.textContent = 'Betöltés...';
-          const r = await fetch(`/visszaszamlalo/api/ics_proxy?url=${encodeURIComponent(url)}`);
+          const r = await fetch(`/visszaszamlalo/api/ics_proxy?url=${encodeURIComponent(url)}`, { credentials: 'same-origin' });
           if (!r.ok) throw new Error(await r.text());
           const text = await r.text();
           const cal = parseICS(text);
@@ -182,6 +189,7 @@ import {
     renderProjectsPanel();
     renderProjectFilterBox();
     renderList();
+    renderCalendars();
   }
 
   function getProject(id) { return state.projects.find(p => p.id === id); }
@@ -210,8 +218,7 @@ import {
     const items = sortCounters(visibleCounters().slice());
 
     activeCountEl.textContent = state.counters.filter(c => !c.archived).length;
-    emptyEl.style.display = items.length ? 'block' : 'none'; // később átállítjuk
-    if (items.length) emptyEl.style.display = 'none';
+    emptyEl.style.display = items.length ? 'none' : 'block';
 
     items.forEach((c) => {
       const p = getProject(c.projectId) || { name: '(nincs projekt)', color: '#888', font: 'default' };
@@ -479,33 +486,80 @@ import {
     } catch (e) { alert('Projekt törlési hiba: ' + e.message); }
   }
 
-  // ----- ICS lista -----
-  function renderCalendars() {
+  // ----- ICS popup -----
+  function openCalendarDialog(cal){
+    if (!calendarDialog) return;
+    calDlgTitle.textContent = `${cal.name} — ${cal.events.length} esemény`;
+    calEventsBox.innerHTML = '';
+
+    cal.events.slice(0, 1000).forEach(ev => {
+      const row = document.createElement('div');
+      row.className = 'event';
+      row.style.cursor = READ_ONLY ? 'default' : 'pointer';
+
+      const left = document.createElement('div');
+      left.textContent = ev.summary || '(nincs cím)';
+
+      const right = document.createElement('div');
+      right.className = 'when';
+      right.textContent = new Date(ev.dtstart).toLocaleString();
+
+      row.append(left, right);
+
+      if (!READ_ONLY) {
+        row.title = 'Dupla katt: előtöltött számláló létrehozás';
+        row.addEventListener('dblclick', () => {
+          if (!state.projects.length) state.projects.push({ id: uid('prj'), name: 'Alap', color: '#6ea8fe', font: 'default' });
+          openCounterDialog();
+          counterName.value = ev.summary || '';
+          counterWhen.value = new Date(ev.dtstart).toISOString().slice(0, 16);
+        });
+      }
+
+      calEventsBox.append(row);
+    });
+
+    calendarDialog.showModal();
+  }
+
+  function renderCalendars(){
     calendarList.innerHTML = '';
     if (!state.calendars.length) {
-      const x = document.createElement('div'); x.className = 'cal-item'; x.textContent = 'Még nincs betöltött naptár.'; calendarList.append(x); return;
+      const x = document.createElement('div');
+      x.className = 'cal-item';
+      x.textContent = 'Még nincs betöltött naptár.';
+      calendarList.append(x);
+      return;
     }
+
     state.calendars.forEach(cal => {
-      const wrap = document.createElement('details');
-      wrap.className = 'cal-item';
-      const sum = document.createElement('summary'); sum.textContent = `${cal.name} — ${cal.events.length} esemény`;
-      wrap.append(sum);
-      cal.events.slice(0, 500).forEach(ev => {
-        const row = document.createElement('div'); row.className = 'event'; row.title = READ_ONLY ? '' : 'Dupla katt: előtöltés új számlálóhoz';
-        const left = document.createElement('div'); left.textContent = ev.summary || '(nincs cím)';
-        const right = document.createElement('div'); right.className = 'when'; right.textContent = new Date(ev.dtstart).toLocaleString();
-        row.append(left, right);
-        if (!READ_ONLY) {
-          row.addEventListener('dblclick', () => {
-            if (!state.projects.length) state.projects.push({ id: uid('prj'), name: 'Alap', color: '#6ea8fe', font: 'default' });
-            openCounterDialog();
-            counterName.value = ev.summary || '';
-            counterWhen.value = new Date(ev.dtstart).toISOString().slice(0, 16);
-          });
-        }
-        wrap.append(row);
-      });
-      calendarList.append(wrap);
+      const row = document.createElement('div');
+      row.className = 'cal-item';
+
+      const top = document.createElement('div');
+      top.className = 'row';
+      top.style.justifyContent = 'space-between';
+
+      const left = document.createElement('div');
+      left.textContent = `${cal.name} — ${cal.events.length} esemény`;
+
+      const btn = document.createElement('button');
+      btn.className = 'btn secondary';
+      btn.type = 'button';
+      btn.textContent = 'Megnyitás';
+      btn.addEventListener('click', () => openCalendarDialog(cal));
+
+      top.append(left, btn);
+      row.append(top);
+
+      const hint = document.createElement('small');
+      hint.className = 'helper';
+      hint.textContent = READ_ONLY
+        ? 'Események megtekintése'
+        : 'A felugró listában dupla katt egy eseményre → előtöltött számláló létrehozás';
+      row.append(hint);
+
+      calendarList.append(row);
     });
   }
 })();

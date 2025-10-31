@@ -83,7 +83,7 @@
 </head>
 <body>
   <div class="app">
-    <!-- Oldalsáv (admin eszközök) -->
+    <!-- Oldalsáv -->
     <aside id="sidebar">
       <h1>⏳ Visszaszámláló</h1>
 
@@ -229,6 +229,22 @@
     </form>
   </dialog>
 
+  <!-- Naptár (ICS) események modal -->
+  <dialog id="calendarDialog">
+    <div class="modal">
+      <header>
+        <strong id="calDlgTitle">Naptár</strong>
+        <button class="btn ghost" type="button" data-close>Bezár</button>
+      </header>
+      <div class="content" style="max-height:60vh; overflow:auto">
+        <div id="calEvents" class="stack"></div>
+      </div>
+      <footer>
+        <button class="btn" type="button" data-close>Oké</button>
+      </footer>
+    </div>
+  </dialog>
+
   <template id="tplProjectChip">
     <span class="tag"><span class="project-dot"></span><b class="name"></b></span>
   </template>
@@ -242,7 +258,7 @@
     };
   </script>
 
-  <!-- FONTOS: modul-ként töltsük a fő app JS-t; ez importálja a vz-utils.js-t -->
-  <script type="module" src="{{ url_for('visszaszamlalo.static', filename='js/vz-app.js', v=1) }}"></script>
+  <!-- FONTOS: modul-ként töltsük a fő app JS-t -->
+  <script type="module" src="{{ url_for('visszaszamlalo.static', filename='js/vz-app.js', v=2) }}"></script>
 </body>
 </html>
