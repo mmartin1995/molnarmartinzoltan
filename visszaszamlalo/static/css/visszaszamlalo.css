@@ -207,7 +207,7 @@ dialog {
     border: 1px solid var(--border);
     border-radius: 16px;
     min-width: 320px;
-    max-width: 520px;
+    max-width: 600px;
     box-shadow: var(--shadow);
 }
 
