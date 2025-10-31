@@ -622,52 +622,47 @@ import {
 
   // Események kirajzolása a popupban: szűrés + csökkenő rendezés
   function renderCalendarEvents(){
-    if (!currentCalendar) return;
-    calEventsBox.innerHTML = '';
+  if (!currentCalendar) return;
+  calEventsBox.innerHTML = '';
 
-    // mai nap kezdete (helyi idő szerint)
-    const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const showPast = !!(calShowPast && calShowPast.checked);
 
-    const showPast = !!(calShowPast && calShowPast.checked);
+  // Ha NINCS pipa → csak a JÖVŐBELI események (mosttól) látszanak
+  const cutoff = showPast ? -Infinity : Date.now();
 
-    // szűrés: ha nincs pipa, csak a MAI naptól (>=) mutat
-    let items = currentCalendar.events.filter(ev => {
-      if (showPast) return true;
-      return ev.dtstart >= todayStart;
-    });
+  // szűrés + csökkenő rendezés (legújabb elöl)
+  let items = currentCalendar.events
+    .filter(ev => ev.dtstart >= cutoff)
+    .sort((a, b) => b.dtstart - a.dtstart);
 
-    // csökkenő rendezés: legújabb elöl
-    items.sort((a, b) => b.dtstart - a.dtstart);
+  // kirajzolás
+  items.slice(0, 1000).forEach(ev => {
+    const row = document.createElement('div');
+    row.className = 'event';
+    row.style.cursor = READ_ONLY ? 'default' : 'pointer';
 
-    // kirajzolás
-    items.slice(0, 1000).forEach(ev => {
-      const row = document.createElement('div');
-      row.className = 'event';
-      row.style.cursor = READ_ONLY ? 'default' : 'pointer';
+    const left = document.createElement('div');
+    left.textContent = ev.summary || '(nincs cím)';
 
-      const left = document.createElement('div');
-      left.textContent = ev.summary || '(nincs cím)';
+    const right = document.createElement('div');
+    right.className = 'when';
+    right.textContent = new Date(ev.dtstart).toLocaleString();
 
-      const right = document.createElement('div');
-      right.className = 'when';
-      right.textContent = new Date(ev.dtstart).toLocaleString();
+    row.append(left, right);
 
-      row.append(left, right);
+    if (!READ_ONLY) {
+      row.title = 'Dupla katt: előtöltött számláló létrehozás';
+      row.addEventListener('dblclick', () => {
+        if (!state.projects.length) state.projects.push({ id: uid('prj'), name: 'Alap', color: '#6ea8fe', font: 'default' });
+        openCounterDialog();
+        counterName.value = ev.summary || '';
+        counterWhen.value = new Date(ev.dtstart).toISOString().slice(0, 16);
+      });
+    }
 
-      if (!READ_ONLY) {
-        row.title = 'Dupla katt: előtöltött számláló létrehozás';
-        row.addEventListener('dblclick', () => {
-          if (!state.projects.length) state.projects.push({ id: uid('prj'), name: 'Alap', color: '#6ea8fe', font: 'default' });
-          openCounterDialog();
-          counterName.value = ev.summary || '';
-          counterWhen.value = new Date(ev.dtstart).toISOString().slice(0, 16);
-        });
-      }
-
-      calEventsBox.append(row);
-    });
-  }
+    calEventsBox.append(row);
+  });
+}
 
   // ----- Calendar rename -----
   function openCalendarRename(cal) {
