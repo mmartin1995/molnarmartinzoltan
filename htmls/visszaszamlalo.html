@@ -177,6 +177,13 @@
         <button class="btn ghost" type="button" data-close>Bezár</button>
       </header>
       <div class="content" style="max-height:60vh; overflow:auto">
+        <!-- Szűrősáv a popupban -->
+        <div class="row" style="justify-content:space-between; margin-bottom:8px">
+          <label class="row" style="gap:8px; cursor:pointer">
+            <input type="checkbox" id="calShowPast" />
+            Múltbéli események mutatása
+          </label>
+        </div>
         <div id="calEvents" class="stack"></div>
       </div>
       <footer>
@@ -220,6 +227,6 @@
   </script>
 
   <!-- MODUL: a fő app JS (ez importálja a vz-utils.js-t) -->
-  <script type="module" src="{{ url_for('visszaszamlalo.static', filename='js/vz-app.js', v=6) }}"></script>
+  <script type="module" src="{{ url_for('visszaszamlalo.static', filename='js/vz-app.js', v=7) }}"></script>
 </body>
 </html>

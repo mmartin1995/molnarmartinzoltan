@@ -18,6 +18,7 @@ import {
     selectedProjects: new Set(), // üres = minden látszik
     calendars: [] // {id,name,events:[]}
   };
+  let currentCalendar = null; // épp megnyitott naptár a popupban
 
   // ----- API -----
   async function apiGet(path) {
@@ -94,6 +95,7 @@ import {
   const calendarDialog = document.getElementById('calendarDialog');
   const calDlgTitle = document.getElementById('calDlgTitle');
   const calEventsBox = document.getElementById('calEvents');
+  const calShowPast = document.getElementById('calShowPast');
 
   const calendarRenameDialog = document.getElementById('calendarRenameDialog');
   const calendarRenameForm = document.getElementById('calendarRenameForm');
@@ -206,6 +208,16 @@ import {
     projectForm.addEventListener('submit', onProjectSubmit);
     btnDeleteProject.addEventListener('click', onProjectDelete);
 
+    // Naptár átnevezés form
+    if (calendarRenameForm) {
+      calendarRenameForm.addEventListener('submit', onCalendarRenameSubmit);
+    }
+
+    // Múltbéli események mutatása checkbox
+    if (calShowPast) {
+      calShowPast.addEventListener('change', () => renderCalendarEvents());
+    }
+
     // Kezdeti render + másodperc igazítás
     renderAll();
     setSecondAlignedInterval(tick);
@@ -216,11 +228,6 @@ import {
         e.preventDefault(); document.getElementById('btnNewCounter').click();
       }
     });
-
-    // Naptár átnevezés form
-    if (calendarRenameForm) {
-      calendarRenameForm.addEventListener('submit', onCalendarRenameSubmit);
-    }
   })();
 
   // ----- Render -----
@@ -530,36 +537,15 @@ import {
   // ----- ICS popup & lista -----
   function openCalendarDialog(cal){
     if (!calendarDialog) return;
+    currentCalendar = cal; // eltároljuk melyik naptár van nyitva
+
     calDlgTitle.textContent = `${cal.name} — ${cal.events.length} esemény`;
     calEventsBox.innerHTML = '';
 
-    cal.events.slice(0, 1000).forEach(ev => {
-      const row = document.createElement('div');
-      row.className = 'event';
-      row.style.cursor = READ_ONLY ? 'default' : 'pointer';
+    // alap: ne mutasson múltbéli eseményeket
+    if (calShowPast) calShowPast.checked = false;
 
-      const left = document.createElement('div');
-      left.textContent = ev.summary || '(nincs cím)';
-
-      const right = document.createElement('div');
-      right.className = 'when';
-      right.textContent = new Date(ev.dtstart).toLocaleString();
-
-      row.append(left, right);
-
-      if (!READ_ONLY) {
-        row.title = 'Dupla katt: előtöltött számláló létrehozás';
-        row.addEventListener('dblclick', () => {
-          if (!state.projects.length) state.projects.push({ id: uid('prj'), name: 'Alap', color: '#6ea8fe', font: 'default' });
-          openCounterDialog();
-          counterName.value = ev.summary || '';
-          counterWhen.value = new Date(ev.dtstart).toISOString().slice(0, 16);
-        });
-      }
-
-      calEventsBox.append(row);
-    });
-
+    renderCalendarEvents(); // szűr + rendez + kirajzol
     calendarDialog.showModal();
   }
 
@@ -634,6 +620,55 @@ import {
     });
   }
 
+  // Események kirajzolása a popupban: szűrés + csökkenő rendezés
+  function renderCalendarEvents(){
+    if (!currentCalendar) return;
+    calEventsBox.innerHTML = '';
+
+    // mai nap kezdete (helyi idő szerint)
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+    const showPast = !!(calShowPast && calShowPast.checked);
+
+    // szűrés: ha nincs pipa, csak a MAI naptól (>=) mutat
+    let items = currentCalendar.events.filter(ev => {
+      if (showPast) return true;
+      return ev.dtstart >= todayStart;
+    });
+
+    // csökkenő rendezés: legújabb elöl
+    items.sort((a, b) => b.dtstart - a.dtstart);
+
+    // kirajzolás
+    items.slice(0, 1000).forEach(ev => {
+      const row = document.createElement('div');
+      row.className = 'event';
+      row.style.cursor = READ_ONLY ? 'default' : 'pointer';
+
+      const left = document.createElement('div');
+      left.textContent = ev.summary || '(nincs cím)';
+
+      const right = document.createElement('div');
+      right.className = 'when';
+      right.textContent = new Date(ev.dtstart).toLocaleString();
+
+      row.append(left, right);
+
+      if (!READ_ONLY) {
+        row.title = 'Dupla katt: előtöltött számláló létrehozás';
+        row.addEventListener('dblclick', () => {
+          if (!state.projects.length) state.projects.push({ id: uid('prj'), name: 'Alap', color: '#6ea8fe', font: 'default' });
+          openCounterDialog();
+          counterName.value = ev.summary || '';
+          counterWhen.value = new Date(ev.dtstart).toISOString().slice(0, 16);
+        });
+      }
+
+      calEventsBox.append(row);
+    });
+  }
+
   // ----- Calendar rename -----
   function openCalendarRename(cal) {
     if (!calendarRenameDialog) return;
@@ -654,6 +689,11 @@ import {
       if (cal) cal.name = name;
       calendarRenameDialog.close();
       renderCalendars();
+      // ha épp nyitva volt, frissítsük a címet is
+      if (currentCalendar && currentCalendar.id === id) {
+        currentCalendar.name = name;
+        calDlgTitle.textContent = `${currentCalendar.name} — ${currentCalendar.events.length} esemény`;
+      }
     } catch (err) {
       alert('Mentési hiba: ' + err.message);
     }
