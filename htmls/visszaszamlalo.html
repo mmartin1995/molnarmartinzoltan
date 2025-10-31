@@ -170,27 +170,30 @@
   </dialog>
 
   <!-- Naptár (ICS) események modal -->
-  <dialog id="calendarDialog">
-    <div class="modal">
-      <header>
-        <strong id="calDlgTitle">Naptár</strong>
-        <button class="btn ghost" type="button" data-close>Bezár</button>
-      </header>
-      <div class="content" style="max-height:60vh; overflow:auto">
-        <!-- Szűrősáv a popupban -->
-        <div class="row" style="justify-content:space-between; margin-bottom:8px">
-          <label class="row" style="gap:8px; cursor:pointer">
-            <input type="checkbox" id="calShowPast" />
-            Múltbéli események mutatása
-          </label>
-        </div>
-        <div id="calEvents" class="stack"></div>
-      </div>
-      <footer>
-        <button class="btn" type="button" data-close>Oké</button>
-      </footer>
+<dialog id="calendarDialog">
+  <div class="modal">
+    <header>
+      <strong id="calDlgTitle">Naptár</strong>
+
+      <!-- ⬅️ IDE KERÜLT A KAPCSOLÓ -->
+      <label class="row" style="gap:8px; cursor:pointer; margin-left:auto; margin-right:8px">
+        <input type="checkbox" id="calShowPast" />
+        Múltbéli események mutatása
+      </label>
+
+      <button class="btn ghost" type="button" data-close>Bezár</button>
+    </header>
+
+    <!-- Görgethető tartalom: csak az eseménylista -->
+    <div class="content" style="max-height:60vh; overflow:auto">
+      <div id="calEvents" class="stack"></div>
     </div>
-  </dialog>
+
+    <footer>
+      <button class="btn" type="button" data-close>Oké</button>
+    </footer>
+  </div>
+</dialog>
 
   <!-- Naptár átnevezése modal -->
   <dialog id="calendarRenameDialog">
