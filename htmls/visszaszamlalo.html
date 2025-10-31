@@ -75,6 +75,15 @@
     [data-project-font="mono"]{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
     [data-project-font="display"]{font-family:"Trebuchet MS",Verdana,Geneva,Tahoma,sans-serif}
 
+    /* Popupokban legyen fehér a szöveg alapból */
+    .modal,
+    .modal header,
+    .modal .content,
+    .modal footer { color: var(--text); }
+    /* ICS esemény sorok a popupban fehérek, a dátum halvány */
+    #calendarDialog .event { color: var(--text); }
+    #calendarDialog .event .when { color: var(--muted); }
+
     @media (max-width: 900px){
       .app{grid-template-columns:1fr}
       aside{position:static;height:auto}
@@ -258,7 +267,7 @@
     };
   </script>
 
-  <!-- FONTOS: modul-ként töltsük a fő app JS-t -->
-  <script type="module" src="{{ url_for('visszaszamlalo.static', filename='js/vz-app.js', v=2) }}"></script>
+  <!-- MODUL: a fő app JS (ez importálja a vz-utils.js-t) -->
+  <script type="module" src="{{ url_for('visszaszamlalo.static', filename='js/vz-app.js', v=3) }}"></script>
 </body>
 </html>
