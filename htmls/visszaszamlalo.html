@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Visszaszámláló – Projektek</title>
 
-  <!-- Google Fonts (projektekhez választható betűtípusok) -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -233,7 +233,7 @@
     <span class="tag"><span class="project-dot"></span><b class="name"></b></span>
   </template>
 
-  <!-- Backend által átadott minimális konfiguráció -->
+  <!-- Backend → frontend minimál konfiguráció -->
   <script>
     window.__VZ__ = {
       READ_ONLY: {{ 'true' if READ_ONLY else 'false' }},
@@ -241,8 +241,8 @@
       API_BASE: "/visszaszamlalo/api"
     };
   </script>
-  <!-- Külön JS fájlok -->
-  <script src="{{ url_for('visszaszamlalo.static', filename='js/vz-utils.js', v=1) }}" defer></script>
-  <script src="{{ url_for('visszaszamlalo.static', filename='js/vz-app.js', v=1) }}" defer></script>
+
+  <!-- FONTOS: modul-ként töltsük a fő app JS-t; ez importálja a vz-utils.js-t -->
+  <script type="module" src="{{ url_for('visszaszamlalo.static', filename='js/vz-app.js', v=1) }}"></script>
 </body>
 </html>
