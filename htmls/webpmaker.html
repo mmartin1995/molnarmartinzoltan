@@ -1,21 +1,109 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebP Converter</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-    rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebP Converter</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="../style.css">
 </head>
 <body>
-    <div class="button"><a href="/">Főoldal</a></div>
-    <h1>Upload Images to Convert to WebP</h1>
-    <form action="/webpmaker/" method="POST" enctype="multipart/form-data">
-        <input type="file" name="files" accept=".jpg,.jpeg,.png" multiple>
-        <input type="submit" value="Convert to WebP">
-    </form>
+  <div class="button"><a href="/">Főoldal</a></div>
+
+  <h1>Upload Images to Convert to WebP</h1>
+
+  {% if download_url %}
+    <div style="margin: 12px 0; padding: 12px; border: 1px solid #ccc;">
+      ✅ Elkészült: <strong>{{ converted_count }}</strong> fájl<br>
+      <a href="{{ download_url }}">⬇️ ZIP letöltése</a>
+    </div>
+  {% endif %}
+
+  {% if errors and errors|length > 0 %}
+    <div style="margin: 12px 0; padding: 12px; border: 1px solid #f2a; background: rgba(255,0,120,0.06);">
+      <strong>Hibák:</strong>
+      <ul>
+        {% for e in errors %}
+          <li>{{ e }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form action="/webpmaker/" method="POST" enctype="multipart/form-data">
+    <div style="margin: 16px 0;">
+      <input type="file" name="files" accept=".jpg,.jpeg,.png" multiple required>
+    </div>
+
+    <fieldset style="margin: 16px 0; padding: 12px;">
+      <legend>Konverziós beállítások</legend>
+
+      <div style="margin: 10px 0;">
+        <label>
+          <input type="radio" name="mode" value="max_size" {% if mode != 'target_quality' %}checked{% endif %}>
+          Maximális méret (KB)
+        </label>
+
+        <input
+          id="max_size_kb"
+          type="number"
+          name="max_size_kb"
+          min="1"
+          step="1"
+          value="{{ max_size_kb }}"
+          style="margin-left: 10px; width: 120px;"
+        >
+      </div>
+
+      <div style="margin: 10px 0;">
+        <label>
+          <input type="radio" name="mode" value="target_quality" {% if mode == 'target_quality' %}checked{% endif %}>
+          Cél minőség (%)
+        </label>
+
+        <input
+          id="target_quality"
+          type="number"
+          name="target_quality"
+          min="1"
+          max="100"
+          step="1"
+          value="{{ target_quality }}"
+          style="margin-left: 10px; width: 120px;"
+          disabled
+        >
+      </div>
+
+      <small>
+        Max. méret módban a quality 2%-onként csökken, amíg a fájlméret el nem éri a megadott KB-t.
+      </small>
+    </fieldset>
+
+    <input type="submit" value="Convert to WebP">
+  </form>
+
+  <script>
+    const radios = document.querySelectorAll('input[name="mode"]');
+    const maxSizeInput = document.getElementById('max_size_kb');
+    const qualityInput = document.getElementById('target_quality');
+
+    function syncModeUI() {
+      const mode = document.querySelector('input[name="mode"]:checked')?.value;
+
+      if (mode === 'target_quality') {
+        qualityInput.disabled = false;
+        maxSizeInput.disabled = true;
+      } else {
+        maxSizeInput.disabled = false;
+        qualityInput.disabled = true;
+      }
+    }
+
+    radios.forEach(r => r.addEventListener('change', syncModeUI));
+    syncModeUI();
+  </script>
 </body>
 </html>
